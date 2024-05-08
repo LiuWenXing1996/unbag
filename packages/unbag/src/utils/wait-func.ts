@@ -18,11 +18,11 @@ export const getResFilePath = (params: { tempDir: string; tag: string }) => {
 export const writeWaitFuncResToFile = async (params: {
   tempDir?: string;
   tag: string;
-  isSucess: boolean;
+  isSuccess: boolean;
 }) => {
-  const { tempDir = defaultTempDir, tag, isSucess } = params;
+  const { tempDir = defaultTempDir, tag, isSuccess } = params;
   const filePath = getResFilePath({ tempDir, tag });
-  await fs.outputFile(filePath, isSucess ? SUCCESS : FAIL);
+  await fs.outputFile(filePath, isSuccess ? SUCCESS : FAIL);
 };
 export const checkWaitFuncResByFile = async (params: {
   name: string;
@@ -58,7 +58,7 @@ export const checkWaitFuncResByFile = async (params: {
   await tryGetRes();
   return content === SUCCESS;
 };
-export const genWaitCommond = (params: {
+export const genWaitCommand = (params: {
   name: string;
   tag: string;
   tempDir?: string;

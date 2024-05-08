@@ -1,40 +1,39 @@
 import { program } from "commander";
 import { watch } from "../commands/watch";
-import { build, loadBuildConfigFromFile } from "../commands/build";
+import { transform, loadTransformConfigFromFile } from "../commands/transform";
 import { clean } from "../commands/clean";
 import { checkWaitFuncResByFile } from "./wait-func";
 import { loadParallelConfigFromFile, parallel } from "../commands/parallel";
 
 export const read = () => {
   program
-    .command("build")
-    .description("构建命令")
+    .command("transform")
+    .description("转换文件")
     .option("-c,--config <string>", "配置文件路径")
     .action(async (options) => {
       let { config = "" } = options;
-      const buildConfig = await loadBuildConfigFromFile({
+      const transformConfig = await loadTransformConfigFromFile({
         root: process.cwd(),
         filePath: config,
       });
-      if (buildConfig) {
-        await build(buildConfig);
+      if (transformConfig) {
+        await transform(transformConfig);
       } else {
         console.log("没有找到配置文件");
       }
     });
-
   program
     .command("watch")
     .description("观察模式")
     .option("-c,--config <string>", "配置文件路径")
     .action(async (options) => {
       let { config = "" } = options;
-      const buildConfig = await loadBuildConfigFromFile({
+      const transformConfig = await loadTransformConfigFromFile({
         root: process.cwd(),
         filePath: config,
       });
-      if (buildConfig) {
-        await watch(buildConfig);
+      if (transformConfig) {
+        await watch(transformConfig);
       } else {
         console.log("没有找到配置文件");
       }

@@ -1,6 +1,6 @@
-import { TsToDtsPlugin, TsToJsPlugin, defineConfig } from "./src";
+import { TsToDtsPlugin, TsToJsPlugin, defineTransformConfig } from "./src";
 
-export default defineConfig({
+export default defineTransformConfig({
   entry: "./src",
   sourcemap: true,
   plugins: [

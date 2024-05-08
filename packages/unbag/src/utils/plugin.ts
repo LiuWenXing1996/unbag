@@ -1,5 +1,5 @@
 import { MaybePromise } from "./types";
-import { IBuildConfig } from "../commands/build";
+import { ITransformConfig } from "../commands/transform";
 import { filterNullable } from "./common";
 
 export interface IPluginInputFile {
@@ -21,17 +21,17 @@ export type IPlugin = {
   ) => MaybePromise<boolean>;
   beforeTransform?: (
     input: IPluginInputFile[],
-    buildConfig: IBuildConfig,
+    transformConfig: ITransformConfig,
     pluginConfig?: IPluginTreeNodeConfig
   ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
   transform?: (
     input: IPluginInputFile,
-    buildConfig: IBuildConfig,
+    transformConfig: ITransformConfig,
     pluginConfig?: IPluginTreeNodeConfig
   ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
   afterTransform?: (
     input: IPluginInputFile[],
-    buildConfig: IBuildConfig,
+    transformConfig: ITransformConfig,
     pluginConfig?: IPluginTreeNodeConfig
   ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
 };
@@ -48,8 +48,8 @@ export interface IPluginTreeNodeConfig {
 const toFileArray = (
   res: IPluginOutputFile | (IPluginOutputFile | undefined)[] | undefined
 ) => {
-  const tmpAray = [res].flat().flat();
-  return filterNullable(tmpAray);
+  const tmpArray = [res].flat().flat();
+  return filterNullable(tmpArray);
 };
 const outputFileToInputFile = (file: IPluginOutputFile): IPluginInputFile =>
   file;
@@ -75,11 +75,11 @@ export const execPluginNode = async (
   data: {
     inputFiles: IPluginInputFile[];
     writeFiles?: IPluginWriteFileFunc;
-    buildConfig: IBuildConfig;
+    transformConfig: ITransformConfig;
   }
 ) => {
   const { plugin, children, config } = node;
-  const { inputFiles, writeFiles, buildConfig } = data;
+  const { inputFiles, writeFiles, transformConfig } = data;
   let currentOutputFiles: IPluginOutputFile[] = [];
   let currentIgnoreFiles: IPluginOutputFile[] = [];
 
@@ -103,7 +103,7 @@ export const execPluginNode = async (
   if (plugin.beforeTransform) {
     const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
     currentOutputFiles = toFileArray(
-      await plugin.beforeTransform(currentInputFiles, buildConfig)
+      await plugin.beforeTransform(currentInputFiles, transformConfig)
     );
   }
   if (plugin.transform) {
@@ -113,7 +113,7 @@ export const execPluginNode = async (
       (
         await Promise.all(
           currentInputFiles.map(async (inputFile) => {
-            return await transform(inputFile, buildConfig);
+            return await transform(inputFile, transformConfig);
           })
         )
       ).flat()
@@ -122,7 +122,7 @@ export const execPluginNode = async (
   if (plugin.afterTransform) {
     const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
     currentOutputFiles = toFileArray(
-      await plugin.afterTransform(currentInputFiles, buildConfig)
+      await plugin.afterTransform(currentInputFiles, transformConfig)
     );
   }
   currentOutputFiles = [...currentOutputFiles, ...currentIgnoreFiles];
@@ -136,7 +136,7 @@ export const execPluginNode = async (
         return await execPluginNode(child, {
           inputFiles: currentInputFiles,
           writeFiles,
-          buildConfig,
+          transformConfig,
         });
       })
     );
@@ -149,7 +149,7 @@ export const execPluginTree = async (
   data: {
     inputFiles: IPluginInputFile[];
     writeFiles?: IPluginWriteFileFunc;
-    buildConfig: IBuildConfig;
+    transformConfig: ITransformConfig;
   }
 ) => {
   await Promise.all(

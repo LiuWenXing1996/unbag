@@ -1,9 +1,14 @@
 {
     "cSpell.words": [
+        "arraify",
         "bundleless",
+        "extnames",
         "memfs",
+        "pcss",
+        "styl",
         "unbag",
         "unbundle",
+        "uuidv",
         "vitepress"
     ]
 }

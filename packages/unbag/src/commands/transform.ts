@@ -10,7 +10,7 @@ export interface IPlugin {
   name: string;
 }
 
-export interface IBuildConfig {
+export interface ITransformConfig {
   entry: string;
   root?: string;
   sourcemap?: boolean;
@@ -32,10 +32,10 @@ export interface IBuildConfig {
 }
 
 const defaultFilterFile = async (filepath: string) => {
-  const needIngore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
+  const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
     filepath.endsWith(f)
   );
-  return !needIngore;
+  return !needIgnore;
 };
 
 const defaultReadFile = async (filepath: string) => {
@@ -69,7 +69,7 @@ export const KNOWN_CODE_FILE_TYPES = [
   ".svg",
 ];
 
-export const resolveBuildEntry = (config: IBuildConfig) => {
+export const resolveTransformEntry = (config: ITransformConfig) => {
   const root = config.root || process.cwd();
   const configEntry = config.entry;
   const entry = path.isAbsolute(configEntry)
@@ -78,9 +78,9 @@ export const resolveBuildEntry = (config: IBuildConfig) => {
   return entry;
 };
 
-export const build = async (config: IBuildConfig) => {
+export const transform = async (config: ITransformConfig) => {
   const root = config.root || process.cwd();
-  const entry = resolveBuildEntry(config);
+  const entry = resolveTransformEntry(config);
   const filterFile = async (filePath: string) => {
     if (config.filterFile) {
       return await config.filterFile(filePath, {
@@ -102,8 +102,8 @@ export const build = async (config: IBuildConfig) => {
   entryFiles = (
     await Promise.all(
       entryFiles.map(async (e) => {
-        const needIngore = !(await filterFile(e));
-        if (needIngore) {
+        const needIgnore = !(await filterFile(e));
+        if (needIgnore) {
           return undefined;
         }
         return e;
@@ -122,13 +122,13 @@ export const build = async (config: IBuildConfig) => {
   await execPluginTree(config.plugins, {
     inputFiles: [...inputFiles],
     writeFiles: async (files, outputPath) => {
-      const absoutePath = path.isAbsolute(outputPath)
+      const absolutePath = path.isAbsolute(outputPath)
         ? outputPath
         : path.join(root, outputPath);
-      await fs.remove(absoutePath);
+      await fs.remove(absolutePath);
       await Promise.all(
         files.map(async (file) => {
-          const outputFilePath = path.join(absoutePath, file.path);
+          const outputFilePath = path.join(absolutePath, file.path);
           await fs.outputFile(outputFilePath, file.content);
           if (config.sourcemap) {
             if (file.sourcemap) {
@@ -138,33 +138,33 @@ export const build = async (config: IBuildConfig) => {
         })
       );
     },
-    buildConfig: { ...config },
+    transformConfig: { ...config },
   });
 };
 
-export async function loadBuildConfigFromFile(options: {
+export async function loadTransformConfigFromFile(options: {
   root: string;
   filePath?: string;
-}): Promise<IBuildConfig | undefined> {
+}): Promise<ITransformConfig | undefined> {
   const root = options.root;
   const fsUtils = createFsUtils(fsPromises);
   const configFileList = [
-    "unbag.config.ts",
-    "unbag.config.js",
-    "unbag.config.cjs",
-    "unbag.config.mjs",
+    "unbag.transform.config.ts",
+    "unbag.transform.config.js",
+    "unbag.transform.config.cjs",
+    "unbag.transform.config.mjs",
   ];
   if (options.filePath) {
     configFileList.push(options.filePath);
   }
   let currentConfigFilePath: string | undefined = undefined;
   for (const configFile of configFileList) {
-    const absoutePath = path.isAbsolute(configFile)
+    const absolutePath = path.isAbsolute(configFile)
       ? configFile
       : path.join(root, configFile);
-    const isExit = await fsUtils.exists(absoutePath);
+    const isExit = await fsUtils.exists(absolutePath);
     if (isExit) {
-      currentConfigFilePath = absoutePath;
+      currentConfigFilePath = absolutePath;
       break;
     }
   }
@@ -182,17 +182,17 @@ export async function loadBuildConfigFromFile(options: {
   return config;
 }
 
-export const defineConfig = (config: IBuildConfig) => config;
+export const defineTransformConfig = (config: ITransformConfig) => config;
 
 export const mergeConfig = (
-  defaults: IBuildConfig,
-  overrides: Partial<IBuildConfig>
+  defaults: ITransformConfig,
+  overrides: Partial<ITransformConfig>
 ) => {
   return mergeConfigRecursively(defaults, overrides);
 };
 
 export const mergeConfigRecursively = <
-  T extends Record<string, any> = Record<string, any>,
+  T extends Record<string, any> = Record<string, any>
 >(
   defaults: T,
   overrides: Partial<T>

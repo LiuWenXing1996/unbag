@@ -16,7 +16,7 @@
     "unbag": "bin/bin.js"
   },
   "scripts": {
-    "build": "tsx ./src/run.ts build",
+    "build": "tsx ./src/run.ts transform",
     "dev": "tsx ./src/run.ts watch"
   },
   "main": "./dist/cjs/index.js",
