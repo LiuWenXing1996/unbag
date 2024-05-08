@@ -1,20 +1,30 @@
-import { TsToJsTransfer, defineConfig } from "./src";
+import { TsToDtsPlugin, TsToJsPlugin, defineConfig } from "./src";
 
 export default defineConfig({
   entry: "./src",
   sourcemap: true,
-  transfers: [
+  plugins: [
     {
-      transfer: TsToJsTransfer({
-        format: "esm",
-      }),
-      output: "./dist/esm",
+      config: {
+        output: "./dist/types",
+      },
+      plugin: TsToDtsPlugin(),
     },
     {
-      transfer: TsToJsTransfer({
+      config: {
+        output: "./dist/esm",
+      },
+      plugin: TsToJsPlugin({
+        format: "esm",
+      }),
+    },
+    {
+      config: {
+        output: "./dist/cjs",
+      },
+      plugin: TsToJsPlugin({
         format: "cjs",
       }),
-      output: "./dist/cjs",
     },
   ],
 });

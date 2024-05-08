@@ -30,3 +30,5 @@ coverage
 
 .local
 .npmrc
+# vitepress
+.vitepress/cache

@@ -143,18 +143,18 @@ export const createFsUtils = (fs: IFsPromisesApi) => {
   };
 };
 
-export interface IVirtulFileSystem extends IFsUtils {
+export interface IVirtualFileSystem extends IFsUtils {
   getFs: () => IFs;
 }
 
-export const createVfs = (): IVirtulFileSystem => {
+export const createVfs = (): IVirtualFileSystem => {
   const vol = new Volume();
   const fs = createFsFromVolume(vol);
 
   // @ts-ignore
   const fsUtils = createFsUtils(fs.promises);
 
-  const vfs: IVirtulFileSystem = {
+  const vfs: IVirtualFileSystem = {
     ...(fsUtils as IFsUtils),
     getFs: () => {
       return fs;
