@@ -15,7 +15,7 @@ jobs:
       - name: setup node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
       - name: install pnpm
         run: npm i pnpm@latest -g
       - name: Setup npmrc
@@ -24,6 +24,8 @@ jobs:
         run: pnpm config set store-dir $PNPM_CACHE_FOLDER
       - name: install dependencies
         run: pnpm install
+      - name: build
+        run: pnpm build
       - name: create and publish versions
         uses: changesets/action@v1
         with:

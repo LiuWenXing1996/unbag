@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "build:unbag": "pnpm --filter 'unbag' build",
+    "build": "pnpm build:unbag",
     "dev": "unbag parallel",
     "ci:version": "changeset version",
     "ci:publish": "pnpm publish -r"

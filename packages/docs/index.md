@@ -2,8 +2,6 @@
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
 
-
-
 hero:
   name: unbag
   text: 一个专门用来开发<br/>npm包的工具
