@@ -5,11 +5,14 @@
   "private": true,
   "scripts": {
     "build:unbag": "pnpm --filter 'unbag' build",
-    "dev": "unbag parallel"
+    "dev": "unbag parallel",
+    "ci:version": "changeset version",
+    "ci:publish": "pnpm publish -r"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@types/wait-on": "^5.3.4",
     "unbag": "workspace:^",
