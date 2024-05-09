@@ -1,5 +1,13 @@
 # unbag
 
+## 0.0.8
+
+### Patch Changes
+
+- fsdfsdfds
+- 93811e5: test github action
+- dddd
+
 ## 0.0.7
 
 ### Patch Changes
