@@ -17,6 +17,8 @@
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
     "@types/wait-on": "^5.3.4",
+    "commitizen": "^4.3.0",
+    "cz-conventional-changelog": "^3.3.0",
     "unbag": "workspace:^",
     "wait-on": "^7.2.0"
   }
