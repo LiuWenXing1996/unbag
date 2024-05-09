@@ -1,5 +1,11 @@
 # unbag
 
+## 0.0.9
+
+### Patch Changes
+
+- [#6](https://github.com/LiuWenXing1996/unbag/pull/6) [`ef63e17`](https://github.com/LiuWenXing1996/unbag/commit/ef63e17866a5a5dc72b04aba53736428ff7c2e48) Thanks [@LiuWenXing1996](https://github.com/LiuWenXing1996)! - testffffs
+
 ## 0.0.8
 
 ### Patch Changes
