@@ -8,7 +8,7 @@
     "build": "pnpm build:unbag",
     "dev": "unbag parallel",
     "ci:version": "changeset version",
-    "ci:publish": "pnpm build & pnpm publish -r",
+    "ci:publish": "pnpm build && pnpm publish -r --no-git-checks",
     "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules"
   },
   "license": "MIT",
