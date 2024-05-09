@@ -1,5 +1,11 @@
 # unbag
 
+## 0.0.14
+
+### Patch Changes
+
+- [#20](https://github.com/LiuWenXing1996/unbag/pull/20) [`92d6922`](https://github.com/LiuWenXing1996/unbag/commit/92d6922833e24f52ead600e2289e57216632a540) Thanks [@LiuWenXing1996](https://github.com/LiuWenXing1996)! - 修复发布失败
+
 ## 0.0.13
 
 ### Patch Changes
