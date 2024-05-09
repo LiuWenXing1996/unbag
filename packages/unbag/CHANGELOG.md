@@ -1,5 +1,13 @@
 # unbag
 
+## 0.0.11
+
+### Patch Changes
+
+- [#13](https://github.com/LiuWenXing1996/unbag/pull/13) [`ff26ae0`](https://github.com/LiuWenXing1996/unbag/commit/ff26ae0f05fea870d3ff19b6aadb2e7e7bd997bf) Thanks [@LiuWenXing1996](https://github.com/LiuWenXing1996)! - sdhfksdhfjkds
+
+- [#11](https://github.com/LiuWenXing1996/unbag/pull/11) [`1335409`](https://github.com/LiuWenXing1996/unbag/commit/13354093ac95c70f0272245c71bce1b2af3e375c) Thanks [@LiuWenXing1996](https://github.com/LiuWenXing1996)! - dddddd
+
 ## 0.0.10
 
 ### Patch Changes
