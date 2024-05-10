@@ -9,7 +9,9 @@
     "dev": "unbag parallel",
     "ci:version": "changeset version",
     "ci:publish": "pnpm build && changeset publish",
-    "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules"
+    "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
+    "commit": "cz",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",
@@ -18,8 +20,15 @@
     "@changesets/cli": "^2.27.1",
     "@types/wait-on": "^5.3.4",
     "commitizen": "^4.3.0",
+    "conventional-changelog-cli": "^5.0.0",
+    "conventional-recommended-bump": "^10.0.0",
     "cz-conventional-changelog": "^3.3.0",
     "unbag": "workspace:^",
     "wait-on": "^7.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
