@@ -7,17 +7,34 @@
     "build:unbag": "pnpm --filter 'unbag' build",
     "build": "pnpm build:unbag",
     "dev": "unbag parallel",
+    "changeset": "changeset-conventional",
     "ci:version": "changeset version",
     "ci:publish": "pnpm build && changeset publish",
-    "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules"
+    "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
+    "cz": "cz",
+    "test":"echo 'test'",
+    "prepare": "husky"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.1",
+    "@commitlint/cli": "^19.3.0",
+    "@commitlint/config-conventional": "^19.2.2",
     "@types/wait-on": "^5.3.4",
+    "changeset-conventional-commits": "^0.2.5",
+    "commitizen": "^4.3.0",
+    "conventional-changelog-cli": "^5.0.0",
+    "conventional-recommended-bump": "^10.0.0",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^9.0.11",
     "unbag": "workspace:^",
     "wait-on": "^7.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   }
 }
