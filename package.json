@@ -12,7 +12,7 @@
     "ci:publish": "pnpm build && changeset publish",
     "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
     "cz": "cz",
-    "test":"echo 'dd'",
+    "test":"echo 'test'",
     "prepare": "husky"
   },
   "license": "MIT",
