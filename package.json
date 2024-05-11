@@ -6,13 +6,14 @@
   "scripts": {
     "build:unbag": "pnpm --filter 'unbag' build",
     "build": "pnpm build:unbag",
+    "docs:build": "pnpm --filter 'unbag-docs' build",
     "dev": "unbag parallel",
     "changeset": "changeset-conventional",
     "ci:version": "changeset version",
     "ci:publish": "pnpm build && changeset publish",
     "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
     "cz": "cz",
-    "test":"echo 'test'",
+    "test": "echo 'test'",
     "prepare": "husky"
   },
   "license": "MIT",
