@@ -1,17 +1,16 @@
 {
   "name": "unbag-monorepo",
-  "version": "0.0.1",
   "description": "unbag monorepo",
   "private": true,
   "scripts": {
     "build:unbag": "pnpm --filter 'unbag' build",
     "build": "pnpm build:unbag",
     "dev": "unbag parallel",
-    "ci:version": "changeset version",
-    "ci:publish": "pnpm build && changeset publish",
+    "add-changeset": "changeset-conventional",
+    "gen-version": "changeset version",
+    "release": "pnpm build && changeset publish",
     "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
-    "commit": "cz",
-    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
+    "cz": "cz"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",
