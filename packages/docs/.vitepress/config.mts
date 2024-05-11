@@ -5,15 +5,16 @@ export default defineConfig({
   title: "unbag",
   base: "/unbag/",
   description: "一个专门用来开发npm工具的包",
-  head: [["link", { rel: "icon", type: "image/svg+xml", href: "/logo.svg" }]],
+  head: [
+    ["link", { rel: "icon", type: "image/svg+xml", href: "/unbag/logo.svg" }],
+  ],
   themeConfig: {
-    // https://vitepress.dev/reference/default-theme-config
     logo: "/logo.svg",
     nav: [
       { text: "指引", link: "/guide/" },
       {
         text: "更新日志",
-        link: "https://github.com/LiuWenXing1996/unbag/blob/main/CHANGELOG.md",
+        link: "https://github.com/LiuWenXing1996/unbag/blob/main/packages/unbag/CHANGELOG.md",
       },
     ],
     sidebar: [
