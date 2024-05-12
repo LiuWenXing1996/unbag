@@ -1,5 +1,13 @@
 # unbag
 
+## 0.0.15
+
+### Patch Changes
+
+- [#30](https://github.com/LiuWenXing1996/unbag/pull/30) [`711edab`](https://github.com/LiuWenXing1996/unbag/commit/711edabeb583cd57569a6034c81307282b55d006) Thanks [@LiuWenXing1996](https://github.com/LiuWenXing1996)! - Merge pull request #29 from LiuWenXing1996/change-config-read-way
+
+  feat: 更改配置文件的读取方式
+
 ## 0.0.14
 
 ### Patch Changes
