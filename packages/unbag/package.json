@@ -17,7 +17,7 @@
   },
   "scripts": {
     "build": "tsx ./src/run.ts transform",
-    "dev": "tsx ./src/run.ts watch"
+    "dev": "tsx ./src/run.ts transform -w"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

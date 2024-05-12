@@ -1,8 +1,8 @@
-import { IPlugin } from "../utils/plugin";
+import { Plugin } from "../utils/plugin";
 import { transform } from "esbuild";
 import path from "../utils/path";
 
-export const TsToJsPlugin = (options?: { format?: "cjs" | "esm" }): IPlugin => {
+export const TsToJsPlugin = (options?: { format?: "cjs" | "esm" }): Plugin => {
   const { format } = options || {};
   return {
     name: "ts-to-js",

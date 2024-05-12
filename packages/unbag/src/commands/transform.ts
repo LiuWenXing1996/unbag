@@ -1,4 +1,4 @@
-import { IPluginInputFile, IPluginTree, execPluginTree } from "../utils/plugin";
+import { PluginInputFile, PluginTree, execPluginTree } from "../utils/plugin";
 import path from "../utils/path";
 import { createFsUtils } from "../utils/fs";
 import * as fsPromises from "node:fs/promises";
@@ -6,15 +6,15 @@ import { MaybePromise } from "../utils/types";
 import { bundleRequire } from "bundle-require";
 import { arraify, isObject } from "../utils/common";
 
-export interface IPlugin {
+export interface Plugin {
   name: string;
 }
 
-export interface ITransformConfig {
+export interface TransformConfig {
   entry: string;
   root?: string;
   sourcemap?: boolean;
-  plugins: IPluginTree;
+  plugins: PluginTree;
   filterFile?: (
     filePath: string,
     options: {
@@ -69,7 +69,7 @@ export const KNOWN_CODE_FILE_TYPES = [
   ".svg",
 ];
 
-export const resolveTransformEntry = (config: ITransformConfig) => {
+export const resolveTransformEntry = (config: TransformConfig) => {
   const root = config.root || process.cwd();
   const configEntry = config.entry;
   const entry = path.isAbsolute(configEntry)
@@ -78,7 +78,7 @@ export const resolveTransformEntry = (config: ITransformConfig) => {
   return entry;
 };
 
-export const transform = async (config: ITransformConfig) => {
+export const transform = async (config: TransformConfig) => {
   const root = config.root || process.cwd();
   const entry = resolveTransformEntry(config);
   const filterFile = async (filePath: string) => {
@@ -110,7 +110,7 @@ export const transform = async (config: ITransformConfig) => {
       })
     )
   ).filter((e) => e) as string[];
-  const inputFiles: IPluginInputFile[] = await Promise.all(
+  const inputFiles: PluginInputFile[] = await Promise.all(
     entryFiles.map(async (entryFilePath) => {
       const content = await readFile(entryFilePath);
       return {
@@ -142,51 +142,9 @@ export const transform = async (config: ITransformConfig) => {
   });
 };
 
-export async function loadTransformConfigFromFile(options: {
-  root: string;
-  filePath?: string;
-}): Promise<ITransformConfig | undefined> {
-  const root = options.root;
-  const fsUtils = createFsUtils(fsPromises);
-  const configFileList = [
-    "unbag.transform.config.ts",
-    "unbag.transform.config.js",
-    "unbag.transform.config.cjs",
-    "unbag.transform.config.mjs",
-  ];
-  if (options.filePath) {
-    configFileList.push(options.filePath);
-  }
-  let currentConfigFilePath: string | undefined = undefined;
-  for (const configFile of configFileList) {
-    const absolutePath = path.isAbsolute(configFile)
-      ? configFile
-      : path.join(root, configFile);
-    const isExit = await fsUtils.exists(absolutePath);
-    if (isExit) {
-      currentConfigFilePath = absolutePath;
-      break;
-    }
-  }
-  if (!currentConfigFilePath) {
-    return undefined;
-  }
-
-  const { mod } = await bundleRequire({
-    filepath: currentConfigFilePath,
-    format: "cjs",
-  });
-  const config = mod.default || mod;
-
-  config.root = config.root || root;
-  return config;
-}
-
-export const defineTransformConfig = (config: ITransformConfig) => config;
-
 export const mergeConfig = (
-  defaults: ITransformConfig,
-  overrides: Partial<ITransformConfig>
+  defaults: TransformConfig,
+  overrides: Partial<TransformConfig>
 ) => {
   return mergeConfigRecursively(defaults, overrides);
 };

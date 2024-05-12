@@ -1,41 +1,35 @@
 import { program } from "commander";
-import { watch } from "../commands/watch";
-import { transform, loadTransformConfigFromFile } from "../commands/transform";
+import { watch as watchCommand } from "../commands/watch";
+import { transform } from "../commands/transform";
 import { clean } from "../commands/clean";
 import { checkWaitFuncResByFile } from "./wait-func";
-import { loadParallelConfigFromFile, parallel } from "../commands/parallel";
+import { parallel } from "../commands/parallel";
+import { loadConfigFromFile } from "./config";
 
 export const read = () => {
   program
     .command("transform")
     .description("转换文件")
     .option("-c,--config <string>", "配置文件路径")
+    .option("-w,--watch", "启用观察模式")
     .action(async (options) => {
-      let { config = "" } = options;
-      const transformConfig = await loadTransformConfigFromFile({
+      let { config = "", watch = false } = options;
+      const cfg = await loadConfigFromFile({
         root: process.cwd(),
         filePath: config,
       });
-      if (transformConfig) {
-        await transform(transformConfig);
-      } else {
+      if (!cfg) {
         console.log("没有找到配置文件");
+        return;
       }
-    });
-  program
-    .command("watch")
-    .description("观察模式")
-    .option("-c,--config <string>", "配置文件路径")
-    .action(async (options) => {
-      let { config = "" } = options;
-      const transformConfig = await loadTransformConfigFromFile({
-        root: process.cwd(),
-        filePath: config,
-      });
-      if (transformConfig) {
-        await watch(transformConfig);
+      if (cfg.transform) {
+        if (watch) {
+          await watchCommand(cfg.transform);
+        } else {
+          await transform(cfg.transform);
+        }
       } else {
-        console.log("没有找到配置文件");
+        console.log("transform 未定义");
       }
     });
 
@@ -49,14 +43,18 @@ export const read = () => {
     .option("-c,--config <string>", "配置文件路径")
     .action(async (options) => {
       let { config = "" } = options;
-      const parallelConfig = await loadParallelConfigFromFile({
+      const cfg = await loadConfigFromFile({
         root: process.cwd(),
         filePath: config,
       });
-      if (parallelConfig) {
-        await parallel(parallelConfig);
-      } else {
+      if (!cfg) {
         console.log("没有找到配置文件");
+        return;
+      }
+      if (cfg.parallel) {
+        await parallel(cfg.parallel);
+      } else {
+        console.log("parallel 未定义");
       }
     });
 
