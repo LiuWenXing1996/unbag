@@ -1,19 +1,15 @@
-import { createFsUtils } from "../utils/fs";
 import { MaybePromise } from "../utils/types";
 import { v4 as uuidv4 } from "uuid";
-import * as fsPromises from "node:fs/promises";
-import path from "../utils/path";
-import { bundleRequire } from "bundle-require";
 import { genWaitCommand } from "../utils/wait-func";
 import { writeWaitFuncResToFile } from "../utils/wait-func";
 import concurrently from "concurrently";
 
-export interface IParallelConfig {
+export interface ParallelConfig {
   tempDir?: string;
-  commands: IParallelCommand[];
+  commands: ParallelCommand[];
 }
 
-export interface IParallelCommand {
+export interface ParallelCommand {
   name: string;
   wait?: () => MaybePromise<boolean>;
   waitTimeout?: number;
@@ -21,14 +17,14 @@ export interface IParallelCommand {
   npmScript: string;
 }
 
-export interface ICommand {
+export interface Command {
   command: string;
   name: string;
 }
 
-export const parallel = async (config: IParallelConfig) => {
-  const waitFuncMap = new Map<string, IParallelCommand["wait"]>();
-  const commands: ICommand[] = config.commands.map((e) => {
+export const parallel = async (config: ParallelConfig) => {
+  const waitFuncMap = new Map<string, ParallelCommand["wait"]>();
+  const commands: Command[] = config.commands.map((e) => {
     let command = `${e.npmScript}`;
     if (e.wait) {
       const waitTag = `${e.name}_wait_${uuidv4()}`;
@@ -69,45 +65,3 @@ export const parallel = async (config: IParallelConfig) => {
     }
   });
 };
-
-export async function loadParallelConfigFromFile(options: {
-  root: string;
-  filePath?: string;
-}): Promise<IParallelConfig | undefined> {
-  const root = options.root;
-  const fsUtils = createFsUtils(fsPromises);
-  const configFileList = [
-    "unbag.parallel.config.ts",
-    "unbag.parallel.config.js",
-    "unbag.parallel.config.cjs",
-    "unbag.parallel.config.mjs",
-  ];
-  if (options.filePath) {
-    configFileList.push(options.filePath);
-  }
-  let currentConfigFilePath: string | undefined = undefined;
-  for (const configFile of configFileList) {
-    const absolutePath = path.isAbsolute(configFile)
-      ? configFile
-      : path.join(root, configFile);
-    const isExit = await fsUtils.exists(absolutePath);
-    if (isExit) {
-      currentConfigFilePath = absolutePath;
-      break;
-    }
-  }
-  if (!currentConfigFilePath) {
-    return undefined;
-  }
-
-  const { mod } = await bundleRequire({
-    filepath: currentConfigFilePath,
-    format: "cjs",
-  });
-  const config = mod.default || mod;
-
-  config.root = config.root || root;
-  return config;
-}
-
-export const defineParallelConfig = (config: IParallelConfig) => config;

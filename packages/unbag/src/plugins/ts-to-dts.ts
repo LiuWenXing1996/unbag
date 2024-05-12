@@ -1,4 +1,4 @@
-import { IPlugin, IPluginOutputFile } from "../utils/plugin";
+import { Plugin, PluginOutputFile } from "../utils/plugin";
 import ts from "typescript";
 import path from "../utils/path";
 
@@ -101,7 +101,7 @@ export const TsToDtsPlugin = (options?: {
   configFile?: string;
   compilerOptions?: ts.CompilerOptions;
   noLogDiagnosticErrors?: boolean;
-}): IPlugin => {
+}): Plugin => {
   return {
     name: "ts-to-dts",
     match: (file) => {
@@ -127,7 +127,7 @@ export const TsToDtsPlugin = (options?: {
         noLogDiagnosticErrors: options?.noLogDiagnosticErrors,
       });
 
-      const outputFiles: IPluginOutputFile[] = files.map((e) => {
+      const outputFiles: PluginOutputFile[] = files.map((e) => {
         return {
           content: e.content,
           path: e.path,

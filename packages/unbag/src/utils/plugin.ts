@@ -1,87 +1,87 @@
 import { MaybePromise } from "./types";
-import { ITransformConfig } from "../commands/transform";
+import { TransformConfig } from "../commands/transform";
 import { filterNullable } from "./common";
 
-export interface IPluginInputFile {
+export interface PluginInputFile {
   path: string;
   content: string | Buffer;
   sourcemap?: string;
 }
-export interface IPluginOutputFile {
+export interface PluginOutputFile {
   path: string;
   content: string | Buffer;
   sourcemap?: string;
 }
 
-export type IPlugin = {
+export type Plugin = {
   name: string;
   match: (
-    file: IPluginInputFile,
-    pluginConfig?: IPluginTreeNodeConfig
+    file: PluginInputFile,
+    pluginConfig?: PluginTreeNodeConfig
   ) => MaybePromise<boolean>;
   beforeTransform?: (
-    input: IPluginInputFile[],
-    transformConfig: ITransformConfig,
-    pluginConfig?: IPluginTreeNodeConfig
-  ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
+    input: PluginInputFile[],
+    transformConfig: TransformConfig,
+    pluginConfig?: PluginTreeNodeConfig
+  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
   transform?: (
-    input: IPluginInputFile,
-    transformConfig: ITransformConfig,
-    pluginConfig?: IPluginTreeNodeConfig
-  ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
+    input: PluginInputFile,
+    transformConfig: TransformConfig,
+    pluginConfig?: PluginTreeNodeConfig
+  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
   afterTransform?: (
-    input: IPluginInputFile[],
-    transformConfig: ITransformConfig,
-    pluginConfig?: IPluginTreeNodeConfig
-  ) => MaybePromise<IPluginOutputFile | IPluginOutputFile[] | undefined>;
+    input: PluginInputFile[],
+    transformConfig: TransformConfig,
+    pluginConfig?: PluginTreeNodeConfig
+  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
 };
 
-export interface IPluginTreeNodeConfig {
+export interface PluginTreeNodeConfig {
   output?: string;
   match?: (
-    file: IPluginInputFile,
-    pluginConfig?: IPluginTreeNodeConfig,
-    pluginMatch?: IPlugin["match"]
+    file: PluginInputFile,
+    pluginConfig?: PluginTreeNodeConfig,
+    pluginMatch?: Plugin["match"]
   ) => MaybePromise<boolean>;
 }
 
 const toFileArray = (
-  res: IPluginOutputFile | (IPluginOutputFile | undefined)[] | undefined
+  res: PluginOutputFile | (PluginOutputFile | undefined)[] | undefined
 ) => {
   const tmpArray = [res].flat().flat();
   return filterNullable(tmpArray);
 };
-const outputFileToInputFile = (file: IPluginOutputFile): IPluginInputFile =>
+const outputFileToInputFile = (file: PluginOutputFile): PluginInputFile =>
   file;
 
-const outputFileListToInputFileList = (list: IPluginOutputFile[]) =>
+const outputFileListToInputFileList = (list: PluginOutputFile[]) =>
   list.map((e) => outputFileToInputFile(e));
 
-export type IPluginTree = IPluginTreeNode[];
+export type PluginTree = PluginTreeNode[];
 
-export interface IPluginTreeNode {
-  plugin: IPlugin;
-  children?: IPluginTreeNode[];
-  config?: IPluginTreeNodeConfig;
+export interface PluginTreeNode {
+  plugin: Plugin;
+  children?: PluginTreeNode[];
+  config?: PluginTreeNodeConfig;
 }
 
-export type IPluginWriteFileFunc = (
-  files: IPluginOutputFile[],
+export type PluginWriteFileFunc = (
+  files: PluginOutputFile[],
   outputPath: string
 ) => MaybePromise<void>;
 
 export const execPluginNode = async (
-  node: IPluginTreeNode,
+  node: PluginTreeNode,
   data: {
-    inputFiles: IPluginInputFile[];
-    writeFiles?: IPluginWriteFileFunc;
-    transformConfig: ITransformConfig;
+    inputFiles: PluginInputFile[];
+    writeFiles?: PluginWriteFileFunc;
+    transformConfig: TransformConfig;
   }
 ) => {
   const { plugin, children, config } = node;
   const { inputFiles, writeFiles, transformConfig } = data;
-  let currentOutputFiles: IPluginOutputFile[] = [];
-  let currentIgnoreFiles: IPluginOutputFile[] = [];
+  let currentOutputFiles: PluginOutputFile[] = [];
+  let currentIgnoreFiles: PluginOutputFile[] = [];
 
   await Promise.all(
     inputFiles.map(async (e) => {
@@ -145,11 +145,11 @@ export const execPluginNode = async (
 };
 
 export const execPluginTree = async (
-  tree: IPluginTree,
+  tree: PluginTree,
   data: {
-    inputFiles: IPluginInputFile[];
-    writeFiles?: IPluginWriteFileFunc;
-    transformConfig: ITransformConfig;
+    inputFiles: PluginInputFile[];
+    writeFiles?: PluginWriteFileFunc;
+    transformConfig: TransformConfig;
   }
 ) => {
   await Promise.all(

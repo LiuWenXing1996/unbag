@@ -2,12 +2,12 @@ import { parse } from "yaml";
 import path from "./path";
 import { Volume, createFsFromVolume, type IFs } from "memfs";
 import type * as _FsPromisesApi from "node:fs/promises";
-export type IFsPromisesApi = typeof _FsPromisesApi;
-export type IWriteFileData = Parameters<IFsPromisesApi["writeFile"]>[1];
-export type IWriteFileOptions = Parameters<IFsPromisesApi["writeFile"]>[2];
-export type IFsUtils = ReturnType<typeof createFsUtils> & IFsPromisesApi;
+export type FsPromisesApi = typeof _FsPromisesApi;
+export type WriteFileData = Parameters<FsPromisesApi["writeFile"]>[1];
+export type WriteFileOptions = Parameters<FsPromisesApi["writeFile"]>[2];
+export type FsUtils = ReturnType<typeof createFsUtils> & FsPromisesApi;
 
-export const createFsUtils = (fs: IFsPromisesApi) => {
+export const createFsUtils = (fs: FsPromisesApi) => {
   const { readFile, readdir, stat, mkdir, writeFile, rm } = fs;
   const YAML = {
     parse,
@@ -94,8 +94,8 @@ export const createFsUtils = (fs: IFsPromisesApi) => {
 
   const outputFile = async (
     file: string,
-    data: IWriteFileData,
-    options?: IWriteFileOptions
+    data: WriteFileData,
+    options?: WriteFileOptions
   ) => {
     const dir = path.dirname(file);
     const fileExist = await exists(dir);
@@ -108,7 +108,7 @@ export const createFsUtils = (fs: IFsPromisesApi) => {
 
   const copyFromFs = async (
     inputDir: string,
-    fromFs: IFsPromisesApi,
+    fromFs: FsPromisesApi,
     outputDir: string = ""
   ) => {
     const fromFsUtils = createFsUtils(fromFs);
@@ -143,19 +143,19 @@ export const createFsUtils = (fs: IFsPromisesApi) => {
   };
 };
 
-export interface IVirtualFileSystem extends IFsUtils {
+export interface VirtualFileSystem extends FsUtils {
   getFs: () => IFs;
 }
 
-export const createVfs = (): IVirtualFileSystem => {
+export const createVfs = (): VirtualFileSystem => {
   const vol = new Volume();
   const fs = createFsFromVolume(vol);
 
   // @ts-ignore
   const fsUtils = createFsUtils(fs.promises);
 
-  const vfs: IVirtualFileSystem = {
-    ...(fsUtils as IFsUtils),
+  const vfs: VirtualFileSystem = {
+    ...(fsUtils as FsUtils),
     getFs: () => {
       return fs;
     },
