@@ -18,9 +18,10 @@ export default defineConfig({
       },
     ],
     sidebar: [
+      { text: "开始", link: "/guide/" },
       {
-        text: "指引",
-        items: [{ text: "开始", link: "/guide/" }],
+        text: "命令",
+        items: [{ text: "transform", link: "/commands/transform" }],
       },
     ],
 
