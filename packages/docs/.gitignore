@@ -32,3 +32,4 @@ coverage
 .npmrc
 # vitepress
 .vitepress/cache
+.vitepress/dist
