@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.3](https://github.com/LiuWenXing1996/unbag/compare/unbag-transform-plugin-vue@0.0.2...unbag-transform-plugin-vue@0.0.3) (2024-06-06)
+
+
+### Features
+
+* **unbag:** add defineTransfromPlugin method ([25c8976](https://github.com/LiuWenXing1996/unbag/commit/25c8976cfaad92d5d93bc04ddb1d4b751e93e67b))
+
+
+### Bug Fixes
+
+* **unbag-transform-plugin-vue:** test changelog ([e743467](https://github.com/LiuWenXing1996/unbag/commit/e74346796ee2cdde798bd9442c410a08e820d9f7))
+
 ## 0.0.2 (2024-06-06)
 
 

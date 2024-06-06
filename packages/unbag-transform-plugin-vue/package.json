@@ -1,6 +1,6 @@
 {
   "name": "unbag-transform-plugin-vue",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "unbag-transform-plugin-vue",
   "files": [
     "dist"
