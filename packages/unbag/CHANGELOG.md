@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.18](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.17...unbag@0.0.18) (2024-06-06)
+
+
+### Bug Fixes
+
+* **unbag-transform-plugin-vue:** test changelog ([e743467](https://github.com/LiuWenXing1996/unbag/commit/e74346796ee2cdde798bd9442c410a08e820d9f7))
+* **unbag:** export TransformPlugin type ([ea8f526](https://github.com/LiuWenXing1996/unbag/commit/ea8f526d01e21f537031aa24750c2d8f39ba7b1d))
+
 ## [0.0.17](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.16...unbag@0.0.17) (2024-06-06)
 
 ## [0.0.16](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.14...unbag@0.0.16) (2024-06-06)
