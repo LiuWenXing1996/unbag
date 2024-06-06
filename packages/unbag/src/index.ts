@@ -6,3 +6,4 @@ export { defineConfig } from "./utils/config";
 
 // export types
 
+export { type TransformPlugin } from "./commands/transform/plugin";
