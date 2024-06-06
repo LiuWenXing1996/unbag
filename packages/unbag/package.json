@@ -1,6 +1,6 @@
 {
   "name": "unbag",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "一个专门用来开发npm工具的包",
   "files": [
     "dist"
@@ -17,7 +17,8 @@
   },
   "scripts": {
     "build": "tsx ./src/run.ts transform",
-    "dev": "tsx ./src/run.ts transform -w"
+    "dev": "tsx ./src/run.ts transform -w",
+    "release": "commit-and-tag-version -t unbag\\@"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
