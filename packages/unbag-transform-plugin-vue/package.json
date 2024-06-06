@@ -1,0 +1,26 @@
+{
+  "name": "unbag-transform-plugin-vue",
+  "version": "0.0.1",
+  "description": "unbag-transform-plugin-vue",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "author": "LiuWenXing1996 lwx_redstone@163.com",
+  "keywords": [
+    "unbundle",
+    "bundleless",
+    "npm tool"
+  ],
+  "scripts": {
+    "build": "unbag transform",
+    "dev": "unbag transform -w",
+    "release": "unbag transform -w"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "devDependencies": {
+    "unbag": "workspace:^"
+  }
+}
