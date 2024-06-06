@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.0.19](https://github.com/LiuWenXing1996/unbag/compare/unbag@9.9.9...unbag@0.0.19) (2024-06-06)
+
+
+### Features
+
+* **unbag:** test feat change ([9038c74](https://github.com/LiuWenXing1996/unbag/commit/9038c743c3862076b10540946e8a2332472ea355))
 
 ## [0.0.18](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.17...unbag@0.0.18) (2024-06-06)
 
