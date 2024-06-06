@@ -1,6 +1,6 @@
-import { Plugin, PluginOutputFile } from "../utils/plugin";
 import ts from "typescript";
-import path from "../utils/path";
+import path from "../../../utils/path";
+import { TransformPluginOutputFile, defineTransformPlugin } from "../plugin";
 
 const defaultDtsCompilerOptions: ts.CompilerOptions = {
   emitDeclarationOnly: true,
@@ -48,7 +48,9 @@ const genDts = (params: {
           "\n"
         );
         console.log(
-          `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`
+          `${diagnostic.file.fileName} (${line + 1},${
+            character + 1
+          }): ${message}`
         );
       } else {
         console.log(
@@ -97,12 +99,12 @@ const supportExtensions = [
   ".d.mts",
   ".mjs",
 ];
-export const TsToDtsPlugin = (options?: {
+export const TsToDtsTransformPlugin = (options?: {
   configFile?: string;
   compilerOptions?: ts.CompilerOptions;
   noLogDiagnosticErrors?: boolean;
-}): Plugin => {
-  return {
+}) => {
+  return defineTransformPlugin({
     name: "ts-to-dts",
     match: (file) => {
       const extname = path.extname(file.path);
@@ -127,7 +129,7 @@ export const TsToDtsPlugin = (options?: {
         noLogDiagnosticErrors: options?.noLogDiagnosticErrors,
       });
 
-      const outputFiles: PluginOutputFile[] = files.map((e) => {
+      const outputFiles: TransformPluginOutputFile[] = files.map((e) => {
         return {
           content: e.content,
           path: e.path,
@@ -135,5 +137,5 @@ export const TsToDtsPlugin = (options?: {
       });
       return outputFiles;
     },
-  };
+  });
 };

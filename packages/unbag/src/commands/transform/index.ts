@@ -1,12 +1,15 @@
-import { PluginInputFile, PluginTree, execPluginTree } from "../utils/plugin";
-import path from "../utils/path";
-import { createFsUtils } from "../utils/fs";
+import {
+  TransformPluginInputFile,
+  TransformPluginTree,
+  execTransformPluginTree,
+} from "./plugin";
+import path from "../../utils/path";
+import { createFsUtils } from "../../utils/fs";
 import * as fsPromises from "node:fs/promises";
-import { MaybePromise } from "../utils/types";
-import { bundleRequire } from "bundle-require";
-import { arraify, isObject } from "../utils/common";
+import { MaybePromise } from "../../utils/types";
+import { arraify, isObject } from "../../utils/common";
 
-export interface Plugin {
+export interface TransformPlugin {
   name: string;
 }
 
@@ -14,7 +17,7 @@ export interface TransformConfig {
   entry: string;
   root?: string;
   sourcemap?: boolean;
-  plugins: PluginTree;
+  plugins: TransformPluginTree;
   filterFile?: (
     filePath: string,
     options: {
@@ -110,7 +113,7 @@ export const transform = async (config: TransformConfig) => {
       })
     )
   ).filter((e) => e) as string[];
-  const inputFiles: PluginInputFile[] = await Promise.all(
+  const inputFiles: TransformPluginInputFile[] = await Promise.all(
     entryFiles.map(async (entryFilePath) => {
       const content = await readFile(entryFilePath);
       return {
@@ -119,7 +122,7 @@ export const transform = async (config: TransformConfig) => {
       };
     })
   );
-  await execPluginTree(config.plugins, {
+  await execTransformPluginTree(config.plugins, {
     inputFiles: [...inputFiles],
     writeFiles: async (files, outputPath) => {
       const absolutePath = path.isAbsolute(outputPath)

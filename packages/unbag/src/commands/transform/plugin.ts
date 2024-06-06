@@ -1,87 +1,99 @@
-import { MaybePromise } from "./types";
-import { TransformConfig } from "../commands/transform";
-import { filterNullable } from "./common";
+import { MaybePromise } from "../../utils/types";
+import { TransformConfig } from ".";
+import { filterNullable } from "../../utils/common";
 
-export interface PluginInputFile {
+export interface TransformPluginInputFile {
   path: string;
   content: string | Buffer;
   sourcemap?: string;
 }
-export interface PluginOutputFile {
+export interface TransformPluginOutputFile {
   path: string;
   content: string | Buffer;
   sourcemap?: string;
 }
 
-export type Plugin = {
+export type TransformPlugin = {
   name: string;
   match: (
-    file: PluginInputFile,
-    pluginConfig?: PluginTreeNodeConfig
+    file: TransformPluginInputFile,
+    pluginConfig?: TransformPluginTreeNodeConfig
   ) => MaybePromise<boolean>;
   beforeTransform?: (
-    input: PluginInputFile[],
+    input: TransformPluginInputFile[],
     transformConfig: TransformConfig,
-    pluginConfig?: PluginTreeNodeConfig
-  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
+    pluginConfig?: TransformPluginTreeNodeConfig
+  ) => MaybePromise<
+    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
+  >;
   transform?: (
-    input: PluginInputFile,
+    input: TransformPluginInputFile,
     transformConfig: TransformConfig,
-    pluginConfig?: PluginTreeNodeConfig
-  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
+    pluginConfig?: TransformPluginTreeNodeConfig
+  ) => MaybePromise<
+    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
+  >;
   afterTransform?: (
-    input: PluginInputFile[],
+    input: TransformPluginInputFile[],
     transformConfig: TransformConfig,
-    pluginConfig?: PluginTreeNodeConfig
-  ) => MaybePromise<PluginOutputFile | PluginOutputFile[] | undefined>;
+    pluginConfig?: TransformPluginTreeNodeConfig
+  ) => MaybePromise<
+    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
+  >;
 };
 
-export interface PluginTreeNodeConfig {
+export const defineTransformPlugin = (p: TransformPlugin) => p;
+
+export interface TransformPluginTreeNodeConfig {
   output?: string;
   match?: (
-    file: PluginInputFile,
-    pluginConfig?: PluginTreeNodeConfig,
-    pluginMatch?: Plugin["match"]
+    file: TransformPluginInputFile,
+    pluginConfig?: TransformPluginTreeNodeConfig,
+    pluginMatch?: TransformPlugin["match"]
   ) => MaybePromise<boolean>;
 }
 
 const toFileArray = (
-  res: PluginOutputFile | (PluginOutputFile | undefined)[] | undefined
+  res:
+    | TransformPluginOutputFile
+    | (TransformPluginOutputFile | undefined)[]
+    | undefined
 ) => {
   const tmpArray = [res].flat().flat();
   return filterNullable(tmpArray);
 };
-const outputFileToInputFile = (file: PluginOutputFile): PluginInputFile =>
-  file;
+const outputFileToInputFile = (
+  file: TransformPluginOutputFile
+): TransformPluginInputFile => file;
 
-const outputFileListToInputFileList = (list: PluginOutputFile[]) =>
+const outputFileListToInputFileList = (list: TransformPluginOutputFile[]) =>
   list.map((e) => outputFileToInputFile(e));
 
-export type PluginTree = PluginTreeNode[];
+export type TransformPluginTree = TransformPluginTreeNode[];
 
-export interface PluginTreeNode {
-  plugin: Plugin;
-  children?: PluginTreeNode[];
-  config?: PluginTreeNodeConfig;
+export interface TransformPluginTreeNode {
+  plugin: TransformPlugin;
+  children?: TransformPluginTreeNode[];
+  config?: TransformPluginTreeNodeConfig;
 }
 
-export type PluginWriteFileFunc = (
-  files: PluginOutputFile[],
+export type TransformPluginWriteFileFunc = (
+  files: TransformPluginOutputFile[],
   outputPath: string
 ) => MaybePromise<void>;
 
-export const execPluginNode = async (
-  node: PluginTreeNode,
+export const execTransformPluginNode = async (
+  node: TransformPluginTreeNode,
   data: {
-    inputFiles: PluginInputFile[];
-    writeFiles?: PluginWriteFileFunc;
+    inputFiles: TransformPluginInputFile[];
+    writeFiles?: TransformPluginWriteFileFunc;
     transformConfig: TransformConfig;
   }
 ) => {
   const { plugin, children, config } = node;
   const { inputFiles, writeFiles, transformConfig } = data;
-  let currentOutputFiles: PluginOutputFile[] = [];
-  let currentIgnoreFiles: PluginOutputFile[] = [];
+  let currentOutputFiles: TransformPluginOutputFile[] = [];
+  let currentIgnoreFiles: TransformPluginOutputFile[] = [];
 
   await Promise.all(
     inputFiles.map(async (e) => {
@@ -133,7 +145,7 @@ export const execPluginNode = async (
     const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
     await Promise.all(
       children.map(async (child) => {
-        return await execPluginNode(child, {
+        return await execTransformPluginNode(child, {
           inputFiles: currentInputFiles,
           writeFiles,
           transformConfig,
@@ -144,17 +156,17 @@ export const execPluginNode = async (
   return currentOutputFiles;
 };
 
-export const execPluginTree = async (
-  tree: PluginTree,
+export const execTransformPluginTree = async (
+  tree: TransformPluginTree,
   data: {
-    inputFiles: PluginInputFile[];
-    writeFiles?: PluginWriteFileFunc;
+    inputFiles: TransformPluginInputFile[];
+    writeFiles?: TransformPluginWriteFileFunc;
     transformConfig: TransformConfig;
   }
 ) => {
   await Promise.all(
     tree.map(async (treeNode) => {
-      return await execPluginNode(treeNode, data);
+      return await execTransformPluginNode(treeNode, data);
     })
   );
 };

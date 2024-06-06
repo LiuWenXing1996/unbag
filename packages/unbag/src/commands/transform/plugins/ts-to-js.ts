@@ -1,10 +1,10 @@
-import { Plugin } from "../utils/plugin";
 import { transform } from "esbuild";
-import path from "../utils/path";
+import path from "../../../utils/path";
+import { defineTransformPlugin } from "../plugin";
 
-export const TsToJsPlugin = (options?: { format?: "cjs" | "esm" }): Plugin => {
+export const TsToJsTransformPlugin = (options?: { format?: "cjs" | "esm" }) => {
   const { format } = options || {};
-  return {
+  return defineTransformPlugin({
     name: "ts-to-js",
     match: (file) => {
       if (path.extname(file.path) === ".ts") {
@@ -25,5 +25,5 @@ export const TsToJsPlugin = (options?: { format?: "cjs" | "esm" }): Plugin => {
         sourcemap: jsFile.map,
       };
     },
-  };
+  });
 };
