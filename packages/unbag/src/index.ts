@@ -8,5 +8,5 @@ export { defineConfig } from "./utils/config";
 
 export {
   type TransformPlugin,
-  type TransformPluginInputFile,
+//   type TransformPluginInputFile,
 } from "./commands/transform/plugin";
