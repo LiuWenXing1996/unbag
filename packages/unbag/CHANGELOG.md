@@ -2,9 +2,6 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
-## [9.9.9](https://github.com/LiuWenXing1996/unbag/compare/unbag@9.9.9...unbag@9.9.9) (2024-06-06)
-
-## [9.9.9](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.18...unbag@9.9.9) (2024-06-06)
 
 ## [0.0.18](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.17...unbag@0.0.18) (2024-06-06)
 
