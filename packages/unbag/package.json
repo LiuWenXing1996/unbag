@@ -1,6 +1,6 @@
 {
   "name": "unbag",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "一个专门用来开发npm工具的包",
   "files": [
     "dist"
@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsx ./src/run.ts transform",
     "dev": "tsx ./src/run.ts transform -w",
-    "release": "commit-and-tag-version -t unbag\\@"
+    "release": "tsx ./src/run.ts release"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -28,6 +28,7 @@
     "bundle-require": "^4.0.2",
     "chokidar": "^3.6.0",
     "commander": "^10.0.0",
+    "commit-and-tag-version": "^12.4.1",
     "concurrently": "^8.2.2",
     "debounce-promise": "^3.1.2",
     "esbuild": "^0.20.1",
