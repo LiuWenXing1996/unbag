@@ -1,6 +1,5 @@
 {
   "name": "unbag-monorepo",
-  "version": "0.0.1",
   "description": "unbag monorepo",
   "private": true,
   "scripts": {
