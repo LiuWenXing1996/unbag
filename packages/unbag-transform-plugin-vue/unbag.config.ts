@@ -1,4 +1,8 @@
-import { TsToDtsPlugin, TsToJsPlugin, defineConfig } from "unbag";
+import {
+  TsToDtsTransformPlugin,
+  TsToJsTransformPlugin,
+  defineConfig,
+} from "unbag";
 
 export default defineConfig({
   transform: {
@@ -9,13 +13,13 @@ export default defineConfig({
         config: {
           output: "./dist/types",
         },
-        plugin: TsToDtsPlugin(),
+        plugin: TsToDtsTransformPlugin(),
       },
       {
         config: {
           output: "./dist/esm",
         },
-        plugin: TsToJsPlugin({
+        plugin: TsToJsTransformPlugin({
           format: "esm",
         }),
       },
@@ -23,7 +27,7 @@ export default defineConfig({
         config: {
           output: "./dist/cjs",
         },
-        plugin: TsToJsPlugin({
+        plugin: TsToJsTransformPlugin({
           format: "cjs",
         }),
       },
