@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.1.2](https://github.com/LiuWenXing1996/unbag/compare/unbag@1.2.0...unbag@0.1.2) (2024-06-06)
+
+
+### Features
+
+* **unbag-transform-plugin-vue:** change version ([8d690b4](https://github.com/LiuWenXing1996/unbag/commit/8d690b40846f56975b9c2484ceb5238cac764386))
+
 ## 0.1.1 (2024-06-06)
 
 
