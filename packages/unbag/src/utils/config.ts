@@ -4,10 +4,12 @@ import { createFsUtils } from "./fs";
 import * as fsPromises from "node:fs/promises";
 import path from "../utils/path";
 import { bundleRequire } from "bundle-require";
+import { ReleaseConfig } from "../commands/release";
 
 export interface Config {
   transform?: TransformConfig;
   parallel?: ParallelConfig;
+  release?: ReleaseConfig;
 }
 
 export const defineConfig = (config: Config) => config;

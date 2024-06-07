@@ -33,4 +33,7 @@ export default defineConfig({
       },
     ],
   },
+  release: {
+    tagPrefix: "unbag@",
+  },
 });

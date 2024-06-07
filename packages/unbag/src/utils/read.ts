@@ -5,6 +5,7 @@ import { clean } from "../commands/clean";
 import { checkWaitFuncResByFile } from "./wait-func";
 import { parallel } from "../commands/parallel";
 import { loadConfigFromFile } from "./config";
+import { release } from "../commands/release";
 
 export const read = () => {
   program
@@ -84,6 +85,23 @@ export const read = () => {
       } else {
         process.exit(1);
       }
+    });
+
+  program
+    .command("release")
+    .description("release")
+    .option("-c,--config <string>", "配置文件路径")
+    .action(async (options) => {
+      let { config = "" } = options;
+      const cfg = await loadConfigFromFile({
+        root: process.cwd(),
+        filePath: config,
+      });
+      if (!cfg) {
+        console.log("没有找到配置文件");
+        return;
+      }
+      await release(cfg.release || {});
     });
 
   program.parse();
