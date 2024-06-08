@@ -14,6 +14,7 @@ export interface TransformPlugin {
 }
 
 export interface TransformConfig {
+  // TODO:watch 放到 config 中
   entry: string;
   root?: string;
   sourcemap?: boolean;

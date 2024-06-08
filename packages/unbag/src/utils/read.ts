@@ -5,7 +5,7 @@ import { clean } from "../commands/clean";
 import { checkWaitFuncResByFile } from "./wait-func";
 import { parallel } from "../commands/parallel";
 import { loadConfigFromFile } from "./config";
-import { release } from "../commands/release";
+import { releaseWithConfigDefaults } from "../commands/release";
 
 export const read = () => {
   program
@@ -101,7 +101,7 @@ export const read = () => {
         console.log("没有找到配置文件");
         return;
       }
-      await release(cfg.release || {});
+      await releaseWithConfigDefaults(cfg.release || {});
     });
 
   program.parse();

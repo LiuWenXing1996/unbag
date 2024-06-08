@@ -5,6 +5,7 @@ import * as fsPromises from "node:fs/promises";
 import path from "../utils/path";
 import { bundleRequire } from "bundle-require";
 import { ReleaseConfig } from "../commands/release";
+import { arraify, isObject } from "./common";
 
 export interface Config {
   transform?: TransformConfig;
@@ -53,3 +54,49 @@ export async function loadConfigFromFile(options: {
   config.root = config.root || root;
   return config;
 }
+
+export const mergeConfig = <
+  T extends Record<string, any> = Record<string, any>
+>(
+  defaults: T,
+  overrides: Partial<T>
+) => {
+  return mergeConfigRecursively(defaults, overrides);
+};
+
+export const mergeConfigRecursively = <
+  T extends Record<string, any> = Record<string, any>
+>(
+  defaults: T,
+  overrides: Partial<T>
+): T => {
+  const merged: T = { ...defaults };
+  for (const key in overrides) {
+    const value = overrides[key];
+    if (value == null) {
+      continue;
+    }
+
+    const existing = merged[key];
+
+    if (existing == null) {
+      merged[key] = value;
+      continue;
+    }
+
+    if (Array.isArray(existing) || Array.isArray(value)) {
+      merged[key] = [
+        ...arraify(existing ?? []),
+        ...arraify(value ?? []),
+      ] as any;
+      continue;
+    }
+    if (isObject(existing) && isObject(value)) {
+      merged[key] = mergeConfigRecursively(existing, value);
+      continue;
+    }
+
+    merged[key] = value;
+  }
+  return merged;
+};
