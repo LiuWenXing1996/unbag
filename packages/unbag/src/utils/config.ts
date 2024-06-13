@@ -1,65 +1,96 @@
-import { ParallelConfig } from "../commands/parallel";
-import { TransformConfig } from "../commands/transform";
+import { ParallelConfig, parallelDefaultConfig } from "../commands/parallel";
+import { TransformConfig, transformDefaultConfig } from "../commands/transform";
 import { createFsUtils } from "./fs";
 import * as fsPromises from "node:fs/promises";
 import path from "../utils/path";
 import { bundleRequire } from "bundle-require";
-import { ReleaseConfig } from "../commands/release";
-import { arraify, isObject } from "./common";
+import { ReleaseConfig, releaseDefaultConfig } from "../commands/release";
+import { arraify, isObject, safeObj } from "./common";
+import { message } from "./message";
+import { DeepPartial } from "./types";
 
-export interface Config {
-  transform?: TransformConfig;
-  parallel?: ParallelConfig;
-  release?: ReleaseConfig;
+export interface FinalUserConfig {
+  root: string;
+  configFileResolvedPath?: string;
+  tempDir: string;
+  transform: TransformConfig;
+  parallel: ParallelConfig;
+  release: ReleaseConfig;
 }
 
-export const defineConfig = (config: Config) => config;
+export type UserConfig = DeepPartial<
+  Omit<FinalUserConfig, "configFileResolvedPath" | "root">
+>;
 
-export async function loadConfigFromFile(options: {
+export const defaultConfig: FinalUserConfig = {
+  root: process.cwd(),
+  tempDir: "./node_modules/.unbag",
+  transform: transformDefaultConfig,
+  parallel: parallelDefaultConfig,
+  release: releaseDefaultConfig,
+};
+
+export const defineUserConfig = (config: UserConfig) => config;
+export const resolveUserConfig = async (options: {
   root: string;
   filePath?: string;
-}): Promise<Config | undefined> {
-  const root = options.root;
+}) => {
+  const { filePath, root } = options;
   const fsUtils = createFsUtils(fsPromises);
-  const configFileList = [
-    "unbag.config.ts",
-    "unbag.config.js",
-    "unbag.config.cjs",
-    "unbag.config.mjs",
-  ];
-  if (options.filePath) {
-    configFileList.push(options.filePath);
-  }
-  let currentConfigFilePath: string | undefined = undefined;
-  for (const configFile of configFileList) {
-    const absolutePath = path.isAbsolute(configFile)
-      ? configFile
-      : path.join(root, configFile);
-    const isExit = await fsUtils.exists(absolutePath);
-    if (isExit) {
-      currentConfigFilePath = absolutePath;
-      break;
+
+  if (filePath) {
+    const absoluteFilePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.join(root, filePath);
+    const isExit = await fsUtils.exists(absoluteFilePath);
+    if (!isExit) {
+      throw new Error(message.configPropertyUndefined(absoluteFilePath));
+    }
+    return await loadUserConfigFromFile(absoluteFilePath);
+  } else {
+    const configFileDefaultList = [
+      "unbag.config.ts",
+      "unbag.config.js",
+      "unbag.config.cjs",
+      "unbag.config.mjs",
+    ];
+    for (const filePath of configFileDefaultList) {
+      const absoluteFilePath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(root, filePath);
+      const isExit = await fsUtils.exists(absoluteFilePath);
+      if (!isExit) {
+        break;
+      }
+      return await loadUserConfigFromFile(absoluteFilePath);
     }
   }
-  if (!currentConfigFilePath) {
-    return undefined;
-  }
+};
 
+export async function loadUserConfigFromFile(absoluteFilePath: string): Promise<
+  | (UserConfig & {
+      configFileResolvedPath: string;
+    })
+  | undefined
+> {
   const { mod } = await bundleRequire({
-    filepath: currentConfigFilePath,
+    filepath: absoluteFilePath,
     format: "cjs",
   });
   const config = mod.default || mod;
-
-  config.root = config.root || root;
+  config.configFileResolvedPath = absoluteFilePath;
   return config;
 }
+
+export const mergeDefaultConfig = (userConfig?: UserConfig) => {
+  return mergeConfig(defaultConfig, userConfig || {});
+};
 
 export const mergeConfig = <
   T extends Record<string, any> = Record<string, any>
 >(
   defaults: T,
-  overrides: Partial<T>
+  overrides: DeepPartial<T>
 ) => {
   return mergeConfigRecursively(defaults, overrides);
 };
@@ -99,4 +130,22 @@ export const mergeConfigRecursively = <
     merged[key] = value;
   }
   return merged;
+};
+
+export const checkUserConfig = () => {
+  // TODO:使用 zod 来校验用户设置
+};
+
+export const safeConfig = <T extends object>(
+  config: T,
+  configVarName: string,
+  configPath?: string
+) => {
+  return safeObj(config, configVarName, {
+    errorMsgFormat: (objName, key) => {
+      const keyPath = `${objName}.${key}`;
+      const msg = message.configPropertyUndefined(keyPath, configPath);
+      return msg;
+    },
+  });
 };

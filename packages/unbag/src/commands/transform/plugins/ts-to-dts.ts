@@ -110,7 +110,7 @@ export const TsToDtsTransformPlugin = (options?: {
       const extname = path.extname(file.path);
       return supportExtensions.includes(extname);
     },
-    beforeTransform(input, buildConfig) {
+    beforeTransform(input, finalUserConfig) {
       const tsCompilerOptionsFromFile =
         tryGetTsCompilerOptionsFromTsConfigJsonFile(options?.configFile);
       const compilerOptions = {
@@ -124,7 +124,7 @@ export const TsToDtsTransformPlugin = (options?: {
             const extname = path.extname(e.path);
             return supportExtensions.includes(extname);
           })
-          .map((e) => path.join(buildConfig.entry, e.path)),
+          .map((e) => path.join(finalUserConfig.transform.entry, e.path)),
         compilerOptions: compilerOptions,
         noLogDiagnosticErrors: options?.noLogDiagnosticErrors,
       });

@@ -1,6 +1,19 @@
 export const message = {
-  releaseUndefinedPkgFileConfig: () => {
-    return `readPkgFile 为 undefined`;
+  userConfigFileNotFound: (filePath: string) => {
+    return `没有找到配置文件: ${filePath}`;
+  },
+  configPropertyUndefined: (keyPath: string, configFilePath?: string) => {
+    if (!configFilePath) {
+      return `配置中的 ${keyPath} 未定义`;
+    } else {
+      return `配置中的 ${keyPath} 未定义，请检查 ${configFilePath}`;
+    }
+  },
+  releaseUndefinedChangelogFilePathConfig: () => {
+    return `changelogFilePath 为 undefined`;
+  },
+  releaseUndefinedPkgFilePathConfig: () => {
+    return `pkgFilePath 为 undefined`;
   },
   releaseBumpNotFoundPkgFile: () => {
     return `没有找到项目配置文件`;
@@ -16,5 +29,8 @@ export const message = {
   },
   releaseBumpGenUnValidVersion: () => {
     return `自动生成 version 失败`;
+  },
+  releaseCommitMessageUndefined: () => {
+    return `CommitMessage 为空，请检查 commitMessageFormat`;
   },
 };

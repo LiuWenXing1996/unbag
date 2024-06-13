@@ -1,102 +1,34 @@
-# Changelog
+fhsjdkfh
 
-All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+[comment]: # (!!!ChangelogHeaderDividerTag!!!)
 
-## [0.1.3](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.1.2...unbag@0.1.3) (2024-06-06)
-
-
-### Features
-
-* **unbag-transform-plugin-vue:** change version ([8d690b4](https://github.com/LiuWenXing1996/unbag/commit/8d690b40846f56975b9c2484ceb5238cac764386))
-* **unbag:** test feat change ([24ce091](https://github.com/LiuWenXing1996/unbag/commit/24ce09147f60e82747ea018b28bcebfd935732e8))
-
-## [0.1.2](https://github.com/LiuWenXing1996/unbag/compare/unbag@1.2.0...unbag@0.1.2) (2024-06-06)
-
+## [0.8.0](https://github.com/LiuWenXing1996/unbag/compare/v1.1.0...v0.8.0) (2024-06-11)
 
 ### Features
 
-* **unbag-transform-plugin-vue:** change version ([8d690b4](https://github.com/LiuWenXing1996/unbag/commit/8d690b40846f56975b9c2484ceb5238cac764386))
+* **unbag:** test commit ([da197e3](https://github.com/LiuWenXing1996/unbag/commit/da197e35f32c8552d4a710d4505f8979c382cb89))
+* **unbag:** test release command ([de22742](https://github.com/LiuWenXing1996/unbag/commit/de227429a1e21e1570ceb7245407b691b872155e))
 
-## 0.1.1 (2024-06-06)
+ag!!!)
 
-
-### Features
-
-* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
-* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
-* **unbag-transform-plugin-vue:** change version ([8d690b4](https://github.com/LiuWenXing1996/unbag/commit/8d690b40846f56975b9c2484ceb5238cac764386))
-* **unbag:** add defineTransfromPlugin method ([25c8976](https://github.com/LiuWenXing1996/unbag/commit/25c8976cfaad92d5d93bc04ddb1d4b751e93e67b))
-* **unbag:** test feat change ([24ce091](https://github.com/LiuWenXing1996/unbag/commit/24ce09147f60e82747ea018b28bcebfd935732e8))
-* **unbag:** test feat change ([0f953b1](https://github.com/LiuWenXing1996/unbag/commit/0f953b168c458882a7b6006491bce121227c4e31))
-* **unbag:** test feat change ([069787a](https://github.com/LiuWenXing1996/unbag/commit/069787a0a3ad9ffe1801cf875f0cd4712a921e8f))
-* **unbag:** test feat change ([9038c74](https://github.com/LiuWenXing1996/unbag/commit/9038c743c3862076b10540946e8a2332472ea355))
-
-
-### Bug Fixes
-
-* **unbag-transform-plugin-vue:** test changelog ([e743467](https://github.com/LiuWenXing1996/unbag/commit/e74346796ee2cdde798bd9442c410a08e820d9f7))
-* **unbag:** export TransformPlugin type ([ea8f526](https://github.com/LiuWenXing1996/unbag/commit/ea8f526d01e21f537031aa24750c2d8f39ba7b1d))
-
-## [1.2.0](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.1.2...unbag@1.2.0) (2024-06-06)
-
+## [0.8.0](https://github.com/LiuWenXing1996/unbag/compare/v1.1.0...v0.8.0) (2024-06-11)
 
 ### Features
 
-* **unbag:** test feat change ([24ce091](https://github.com/LiuWenXing1996/unbag/commit/24ce09147f60e82747ea018b28bcebfd935732e8))
+* **unbag:** test commit ([da197e3](https://github.com/LiuWenXing1996/unbag/commit/da197e35f32c8552d4a710d4505f8979c382cb89))
+* **unbag:** test release command ([de22742](https://github.com/LiuWenXing1996/unbag/commit/de227429a1e21e1570ceb7245407b691b872155e))
 
-## [0.1.2](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.1.1...unbag@0.1.2) (2024-06-06)
+ag!!!)
 
-
-### Features
-
-* **unbag:** test feat change ([0f953b1](https://github.com/LiuWenXing1996/unbag/commit/0f953b168c458882a7b6006491bce121227c4e31))
-
-## [0.1.1](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.24...unbag@0.1.1) (2024-06-06)
-
-## [0.0.24](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.23...unbag@0.0.24) (2024-06-06)
-
-## [0.0.23](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.22...unbag@0.0.23) (2024-06-06)
-
-## [0.0.22](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.21...unbag@0.0.22) (2024-06-06)
-
-## [0.0.21](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.20...unbag@0.0.21) (2024-06-06)
-
+## [0.8.0](https://github.com/LiuWenXing1996/unbag/compare/v1.1.0...v0.8.0) (2024-06-11)
 
 ### Features
 
-* **unbag:** test feat change ([069787a](https://github.com/LiuWenXing1996/unbag/commit/069787a0a3ad9ffe1801cf875f0cd4712a921e8f))
-
-## [0.0.20](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.19...unbag@0.0.20) (2024-06-06)
-
-## [0.0.19](https://github.com/LiuWenXing1996/unbag/compare/unbag@9.9.9...unbag@0.0.19) (2024-06-06)
+* **unbag:** test commit ([da197e3](https://github.com/LiuWenXing1996/unbag/commit/da197e35f32c8552d4a710d4505f8979c382cb89))
+* **unbag:** test release command ([de22742](https://github.com/LiuWenXing1996/unbag/commit/de227429a1e21e1570ceb7245407b691b872155e))
 
 
-### Features
 
-* **unbag:** test feat change ([9038c74](https://github.com/LiuWenXing1996/unbag/commit/9038c743c3862076b10540946e8a2332472ea355))
+[comment]: # (!!!ChangelogFooterDividerTag!!!)
 
-## [0.0.18](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.17...unbag@0.0.18) (2024-06-06)
-
-
-### Bug Fixes
-
-* **unbag-transform-plugin-vue:** test changelog ([e743467](https://github.com/LiuWenXing1996/unbag/commit/e74346796ee2cdde798bd9442c410a08e820d9f7))
-* **unbag:** export TransformPlugin type ([ea8f526](https://github.com/LiuWenXing1996/unbag/commit/ea8f526d01e21f537031aa24750c2d8f39ba7b1d))
-
-## [0.0.17](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.16...unbag@0.0.17) (2024-06-06)
-
-## [0.0.16](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.14...unbag@0.0.16) (2024-06-06)
-
-
-### Features
-
-* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
-* **unbag:** add defineTransfromPlugin method ([25c8976](https://github.com/LiuWenXing1996/unbag/commit/25c8976cfaad92d5d93bc04ddb1d4b751e93e67b))
-
-## [0.0.15](https://github.com/LiuWenXing1996/unbag/compare/unbag@0.0.14...unbag@0.0.15) (2024-06-06)
-
-
-### Features
-
-* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
-* **unbag:** add defineTransfromPlugin method ([25c8976](https://github.com/LiuWenXing1996/unbag/commit/25c8976cfaad92d5d93bc04ddb1d4b751e93e67b))
+fddddhsjdkfh

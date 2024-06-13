@@ -1,6 +1,6 @@
 import { MaybePromise } from "../../utils/types";
-import { TransformConfig } from ".";
 import { filterNullable } from "../../utils/common";
+import { FinalUserConfig } from "../../utils/config";
 
 export interface TransformPluginInputFile {
   path: string;
@@ -17,25 +17,25 @@ export type TransformPlugin = {
   name: string;
   match: (
     file: TransformPluginInputFile,
-    pluginConfig?: TransformPluginTreeNodeConfig
+    pluginConfig: TransformPluginTreeNodeConfig
   ) => MaybePromise<boolean>;
   beforeTransform?: (
     input: TransformPluginInputFile[],
-    transformConfig: TransformConfig,
+    finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
   ) => MaybePromise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
   >;
   transform?: (
     input: TransformPluginInputFile,
-    transformConfig: TransformConfig,
+    finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
   ) => MaybePromise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
   >;
   afterTransform?: (
     input: TransformPluginInputFile[],
-    transformConfig: TransformConfig,
+    finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
   ) => MaybePromise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
@@ -87,11 +87,11 @@ export const execTransformPluginNode = async (
   data: {
     inputFiles: TransformPluginInputFile[];
     writeFiles?: TransformPluginWriteFileFunc;
-    transformConfig: TransformConfig;
+    finalUserConfig: FinalUserConfig;
   }
 ) => {
   const { plugin, children, config } = node;
-  const { inputFiles, writeFiles, transformConfig } = data;
+  const { inputFiles, writeFiles, finalUserConfig } = data;
   let currentOutputFiles: TransformPluginOutputFile[] = [];
   let currentIgnoreFiles: TransformPluginOutputFile[] = [];
 
@@ -115,7 +115,7 @@ export const execTransformPluginNode = async (
   if (plugin.beforeTransform) {
     const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
     currentOutputFiles = toFileArray(
-      await plugin.beforeTransform(currentInputFiles, transformConfig)
+      await plugin.beforeTransform(currentInputFiles, finalUserConfig, config)
     );
   }
   if (plugin.transform) {
@@ -125,7 +125,7 @@ export const execTransformPluginNode = async (
       (
         await Promise.all(
           currentInputFiles.map(async (inputFile) => {
-            return await transform(inputFile, transformConfig);
+            return await transform(inputFile, finalUserConfig, config);
           })
         )
       ).flat()
@@ -134,7 +134,7 @@ export const execTransformPluginNode = async (
   if (plugin.afterTransform) {
     const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
     currentOutputFiles = toFileArray(
-      await plugin.afterTransform(currentInputFiles, transformConfig)
+      await plugin.afterTransform(currentInputFiles, finalUserConfig, config)
     );
   }
   currentOutputFiles = [...currentOutputFiles, ...currentIgnoreFiles];
@@ -148,7 +148,7 @@ export const execTransformPluginNode = async (
         return await execTransformPluginNode(child, {
           inputFiles: currentInputFiles,
           writeFiles,
-          transformConfig,
+          finalUserConfig: finalUserConfig,
         });
       })
     );
@@ -161,7 +161,7 @@ export const execTransformPluginTree = async (
   data: {
     inputFiles: TransformPluginInputFile[];
     writeFiles?: TransformPluginWriteFileFunc;
-    transformConfig: TransformConfig;
+    finalUserConfig: FinalUserConfig;
   }
 ) => {
   await Promise.all(

@@ -52,19 +52,24 @@ export const createFsUtils = (fs: Partial<FsPromisesApi>) => {
 
   const modifyJson = async <T, V = T>(
     path: string,
-    modify: (input: T) => MaybePromise<V>
+    modify: (input?: T) => MaybePromise<V | undefined>
   ) => {
-    const content = (await $readFile()(path, "utf-8")) as string;
-    const json = JSON.parse(content);
-    const newJson = await modify(json);
+    let oldContent: string | undefined = undefined;
+    let oldJson: T | undefined = undefined;
+    try {
+      oldContent = (await $readFile()(path, "utf-8")) as string;
+      oldJson = JSON.parse(oldContent || "");
+    } catch (error) {}
+    const newJson = (await modify(oldJson)) || "";
 
     const detectIndent = await import("detect-indent");
     const detectNewline = await import("detect-newline");
     const DEFAULT_INDENT = 2;
     const CRLF = "\r\n";
     const LF = "\n";
-    const indent = detectIndent.default(content).indent || DEFAULT_INDENT;
-    const newline = detectNewline.detectNewline(content);
+    const indent =
+      detectIndent.default(oldContent || "").indent || DEFAULT_INDENT;
+    const newline = detectNewline.detectNewline(oldContent || "");
 
     let newContent = JSON.stringify(newJson, null, indent);
     if (newline === CRLF) {
@@ -114,7 +119,6 @@ export const createFsUtils = (fs: Partial<FsPromisesApi>) => {
       await $stat()(path);
       return true;
     } catch (e) {
-      console.log(e);
       return false;
     }
   };

@@ -7,49 +7,36 @@ import path from "../../utils/path";
 import { createFsUtils } from "../../utils/fs";
 import * as fsPromises from "node:fs/promises";
 import { MaybePromise } from "../../utils/types";
-import { arraify, isObject } from "../../utils/common";
-
-export interface TransformPlugin {
-  name: string;
-}
-
+import { FinalUserConfig } from "../../utils/config";
+import { watch as fsWatch } from "chokidar";
+import debounce from "debounce-promise";
+// TODO:继续实现 transform 和 watch
 export interface TransformConfig {
-  // TODO:watch 放到 config 中
   entry: string;
-  root?: string;
+  watch?: boolean;
   sourcemap?: boolean;
   plugins: TransformPluginTree;
-  filterFile?: (
-    filePath: string,
-    options: {
-      oldFilterFile: (filepath: string) => Promise<boolean>;
-    }
-  ) => MaybePromise<boolean>;
-  readFile?: (
-    filePath: string,
-    options: {
-      oldReadFile: (filepath: string) => Promise<string | Buffer>;
-    }
-  ) => MaybePromise<string | Buffer>;
-  codeFileTypes?: string[];
-  excludeFileTypes?: string[];
+  filterFile: (filePath: string) => MaybePromise<boolean>;
+  readFile: (filePath: string) => MaybePromise<string | Buffer>;
 }
-
-const defaultFilterFile = async (filepath: string) => {
-  const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
-    filepath.endsWith(f)
-  );
-  return !needIgnore;
-};
-
-const defaultReadFile = async (filepath: string) => {
-  const readToString = KNOWN_CODE_FILE_TYPES.filter((e) => e).some((f) =>
-    filepath.endsWith(f)
-  );
-  if (readToString) {
-    return await fsPromises.readFile(filepath, "utf-8");
-  }
-  return await fsPromises.readFile(filepath);
+export const transformDefaultConfig: TransformConfig = {
+  entry: "./src",
+  plugins: [],
+  filterFile: async (filepath: string) => {
+    const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
+      filepath.endsWith(f)
+    );
+    return !needIgnore;
+  },
+  readFile: async (filepath: string) => {
+    const readToString = KNOWN_CODE_FILE_TYPES.filter((e) => e).some((f) =>
+      filepath.endsWith(f)
+    );
+    if (readToString) {
+      return await fsPromises.readFile(filepath, "utf-8");
+    }
+    return await fsPromises.readFile(filepath);
+  },
 };
 
 export const KNOWN_EXCLUDE_FILE_TYPES = [".DS_Store"];
@@ -73,34 +60,17 @@ export const KNOWN_CODE_FILE_TYPES = [
   ".svg",
 ];
 
-export const resolveTransformEntry = (config: TransformConfig) => {
-  const root = config.root || process.cwd();
-  const configEntry = config.entry;
-  const entry = path.isAbsolute(configEntry)
-    ? configEntry
-    : path.join(root, configEntry);
-  return entry;
+export const resolveTransformEntry = (config: FinalUserConfig) => {
+  const { root, transform } = config;
+  const { entry, sourcemap } = transform;
+  const finalEntry = path.isAbsolute(entry) ? entry : path.join(root, entry);
+  return finalEntry;
 };
 
-export const transform = async (config: TransformConfig) => {
-  const root = config.root || process.cwd();
+export const innerTransform = async (config: FinalUserConfig) => {
+  const { root, transform } = config;
+  const { filterFile, readFile, plugins, sourcemap } = transform;
   const entry = resolveTransformEntry(config);
-  const filterFile = async (filePath: string) => {
-    if (config.filterFile) {
-      return await config.filterFile(filePath, {
-        oldFilterFile: defaultFilterFile,
-      });
-    }
-    return await defaultFilterFile(filePath);
-  };
-  const readFile = async (filePath: string) => {
-    if (config.readFile) {
-      return await config.readFile(filePath, {
-        oldReadFile: defaultReadFile,
-      });
-    }
-    return await defaultReadFile(filePath);
-  };
   const fs = createFsUtils(fsPromises);
   let entryFiles = await fs.listFiles(entry);
   entryFiles = (
@@ -123,7 +93,7 @@ export const transform = async (config: TransformConfig) => {
       };
     })
   );
-  await execTransformPluginTree(config.plugins, {
+  await execTransformPluginTree(plugins, {
     inputFiles: [...inputFiles],
     writeFiles: async (files, outputPath) => {
       const absolutePath = path.isAbsolute(outputPath)
@@ -134,7 +104,7 @@ export const transform = async (config: TransformConfig) => {
         files.map(async (file) => {
           const outputFilePath = path.join(absolutePath, file.path);
           await fs.outputFile(outputFilePath, file.content);
-          if (config.sourcemap) {
+          if (sourcemap) {
             if (file.sourcemap) {
               await fs.outputFile(outputFilePath + ".map", file.sourcemap);
             }
@@ -142,50 +112,29 @@ export const transform = async (config: TransformConfig) => {
         })
       );
     },
-    transformConfig: { ...config },
+    finalUserConfig: { ...config },
   });
 };
 
-export const mergeConfig = (
-  defaults: TransformConfig,
-  overrides: Partial<TransformConfig>
-) => {
-  return mergeConfigRecursively(defaults, overrides);
+export const watch = async (config: FinalUserConfig) => {
+  const entry = resolveTransformEntry(config);
+  const watcher = fsWatch(entry);
+  const debouncedTransform = debounce(async () => {
+    await innerTransform(config);
+  }, 100);
+  await debouncedTransform();
+  watcher.on("all", async (type, file) => {
+    console.log("检测到变化，正在重新转换文件...");
+    await debouncedTransform();
+    console.log("文件转换完成");
+  });
+  console.log("观察模式已启动");
 };
 
-export const mergeConfigRecursively = <
-  T extends Record<string, any> = Record<string, any>
->(
-  defaults: T,
-  overrides: Partial<T>
-): T => {
-  const merged: T = { ...defaults };
-  for (const key in overrides) {
-    const value = overrides[key];
-    if (value == null) {
-      continue;
-    }
-
-    const existing = merged[key];
-
-    if (existing == null) {
-      merged[key] = value;
-      continue;
-    }
-
-    if (Array.isArray(existing) || Array.isArray(value)) {
-      merged[key] = [
-        ...arraify(existing ?? []),
-        ...arraify(value ?? []),
-      ] as any;
-      continue;
-    }
-    if (isObject(existing) && isObject(value)) {
-      merged[key] = mergeConfigRecursively(existing, value);
-      continue;
-    }
-
-    merged[key] = value;
+export const transform = async (config: FinalUserConfig) => {
+  if (config.transform.watch) {
+    await watch(config);
+  } else {
+    return innerTransform(config);
   }
-  return merged;
 };

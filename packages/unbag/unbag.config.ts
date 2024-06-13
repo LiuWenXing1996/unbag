@@ -1,12 +1,11 @@
 import {
   TsToDtsTransformPlugin,
   TsToJsTransformPlugin,
-  defineConfig,
+  defineUserConfig,
 } from "./src";
 
-export default defineConfig({
+export default defineUserConfig({
   transform: {
-    entry: "./src",
     sourcemap: true,
     plugins: [
       {
@@ -36,5 +35,8 @@ export default defineConfig({
   release: {
     tagPrefix: "unbag@",
     scope: "unbag",
+    disableWriteVersion: true,
+    changelogHeader: `fhsjdkfh`,
+    changelogFooter: `fddddhsjdkfh`,
   },
 });

@@ -1,13 +1,12 @@
-import { mergeConfig } from "../../utils/config";
 import semver, { type ReleaseType } from "semver";
 import { message } from "../../utils/message";
-import { ReleaseConfig, ReleaseConfigDefaults } from ".";
 //@ts-ignore
 import type { Commit } from "conventional-commits-parser";
 //@ts-ignore
 import type { Bumper } from "conventional-recommended-bump";
 //@ts-ignore
 import type { BumperRecommendation } from "conventional-recommended-bump";
+import { FinalUserConfig } from "../../utils/config";
 
 export const VERSIONS = ["major", "minor", "patch"] as const;
 
@@ -32,12 +31,13 @@ export const isInPrerelease = (version: string) => {
 };
 
 export const genVersionByCommits = async (
-  config: ReleaseConfig,
+  config: FinalUserConfig,
   data: {
     oldVersion: string;
   }
 ): Promise<BumpResult> => {
-  const { scope, releasePre, releasePreTag, tagPrefix } = config;
+  const { release } = config;
+  const { scope, releasePre, releasePreTag, tagPrefix } = release;
   const { oldVersion } = data;
   const { Bumper } = await import("conventional-recommended-bump");
   const bumper = new Bumper();
@@ -99,8 +99,9 @@ export interface BumpResult {
   commits?: Commit[];
 }
 
-export const bump = async (config: ReleaseConfig = {}): Promise<BumpResult> => {
-  const { readPkgFile, releaseAs, releaseType, releasePreTag } = config;
+export const bump = async (config: FinalUserConfig): Promise<BumpResult> => {
+  const { release } = config;
+  const { readPkgFile, releaseAs, releaseType, releasePreTag } = release;
   const pkgFileContent = await readPkgFile?.(config);
   if (!pkgFileContent) {
     throw new Error(message.releaseBumpNotFoundPkgFile());
