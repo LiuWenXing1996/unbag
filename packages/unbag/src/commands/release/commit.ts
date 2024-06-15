@@ -4,8 +4,8 @@ import { message } from "../../utils/message";
 import { BumpResult } from "./bump";
 
 export async function branchStatus() {
-  const { execa } = await import("execa");
-  const { stdout } = await execa("git status -s");
+  const { $ } = await import("execa");
+  const { stdout } = await $("git status -s");
   return stdout;
 }
 
@@ -18,13 +18,10 @@ export const branchIsClean = async () => {
 };
 
 export interface CommitData {
-  bumpRes?: BumpResult;
-  changelogRes?: ReleaseChangelogFileContent;
+  bumpRes: BumpResult;
+  changelogRes: ReleaseChangelogFileContent;
 }
-export const commit = async (
-  config: FinalUserConfig,
-  data: CommitData = {}
-) => {
+export const commit = async (config: FinalUserConfig, data: CommitData) => {
   const { release } = config;
   const { commitMessage, commitMessageFormat, commitFilesCollect } = release;
 
@@ -34,10 +31,10 @@ export const commit = async (
     throw new Error(message.releaseCommitMessageUndefined());
   }
   const addFiles: string[] = await commitFilesCollect(config, data);
-  if (addFiles.length < 0) {
+  if (addFiles.length <= 0) {
     return;
   }
-  const { execa } = await import("execa");
-  await execa(`git add ${addFiles.join(" ")}`);
-  await execa(`git commit -m ${finalCommitMsg}`);
+  const { $ } = await import("execa");
+  await $`git add ${addFiles.join(" ")}`;
+  await $`git commit -m ${finalCommitMsg}`;
 };

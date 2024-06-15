@@ -13,6 +13,27 @@ const Configuration: UserConfig = {
       const scopeEnum = await scopes.rules["scope-enum"](ctx);
       return [scopeEnum[0], scopeEnum[1], ["root", ...scopeEnum[2]]];
     },
+    // @ts-ignore
+    "type-enum": () => {
+      return [
+        RuleConfigSeverity.Error,
+        "always",
+        [
+          "build",
+          "chore",
+          "ci",
+          "docs",
+          "feat",
+          "fix",
+          "perf",
+          "refactor",
+          "revert",
+          "style",
+          "test",
+          "release",
+        ],
+      ];
+    },
   },
 };
 

@@ -16,7 +16,8 @@
     "test": "echo 'test'",
     "prepare": "husky",
     "bump": "pnpm conventional-recommended-bump -p conventionalcommits",
-    "release": "pnpm commit-and-tag-version"
+    "release": "pnpm commit-and-tag-version",
+    "sss": "pnpm commit"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",
