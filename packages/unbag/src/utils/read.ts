@@ -1,90 +1,120 @@
-import { program } from "commander";
-import { watch as watchCommand } from "../commands/watch";
+import { Command, Option } from "commander";
 import { transform } from "../commands/transform";
 import { clean } from "../commands/clean";
-import { checkWaitFuncResByFile } from "./wait-func";
 import { parallel } from "../commands/parallel";
-import { loadConfigFromFile } from "./config";
+import {
+  CheckWaitFileResult,
+  WaitCmdName,
+  checkWaitFile,
+} from "../commands/parallel/wait";
+import {
+  resolveUserConfig,
+  mergeDefaultConfig,
+  defaultConfig,
+  mergeConfig,
+} from "./config";
+import { release } from "../commands/release";
+
+class CustomCommand extends Command {
+  addOptions(options: Option[]) {
+    for (const option of options) {
+      this.addOption(option);
+    }
+    return this;
+  }
+}
+
+const getCommonOptions = () => {
+  const options: Option[] = [
+    new Option("-c,--config <string>", "配置文件路径"),
+    new Option("-r,--root <string>", "根路径"),
+  ];
+  return options;
+};
+
+const resolveCliUserConfig = async (options: any) => {
+  const { config = "", root } = options;
+  const userConfig = await resolveUserConfig({
+    root: root || defaultConfig.root,
+    filePath: config,
+  });
+  const mergedConfig = mergeDefaultConfig(userConfig);
+  return mergedConfig;
+};
 
 export const read = () => {
+  const program = new CustomCommand();
+  program.name("unbag").description("unbag CLI").version("0.8.0");
   program
-    .command("transform")
-    .description("转换文件")
-    .option("-c,--config <string>", "配置文件路径")
-    .option("-w,--watch", "启用观察模式")
-    .action(async (options) => {
-      let { config = "", watch = false } = options;
-      const cfg = await loadConfigFromFile({
-        root: process.cwd(),
-        filePath: config,
-      });
-      if (!cfg) {
-        console.log("没有找到配置文件");
-        return;
-      }
-      if (cfg.transform) {
-        if (watch) {
-          await watchCommand(cfg.transform);
-        } else {
-          await transform(cfg.transform);
-        }
-      } else {
-        console.log("transform 未定义");
-      }
-    });
-
-  program.command("clean").action(() => {
-    clean();
-  });
-
-  program
-    .command("parallel")
-    .description("运行多个npm script")
-    .option("-c,--config <string>", "配置文件路径")
-    .action(async (options) => {
-      let { config = "" } = options;
-      const cfg = await loadConfigFromFile({
-        root: process.cwd(),
-        filePath: config,
-      });
-      if (!cfg) {
-        console.log("没有找到配置文件");
-        return;
-      }
-      if (cfg.parallel) {
-        await parallel(cfg.parallel);
-      } else {
-        console.log("parallel 未定义");
-      }
-    });
-
-  program
-    .command("wait")
-    .description("等待某个函数运行完成")
-    .option("-n,--name <string>", "命令名称")
-    .option("-tg,--tag <string>", "函数运行标志")
-    .option("-td,--tempDir <string>", "临时文件夹")
-    .option("-i,--interval <string>", "检测间隔")
-    .option("-tm,--timeout <string>", "超时时间")
-    .action(async (options) => {
-      const { name = "", tag = "", interval, timeout, tempDir } = options;
-      let isSuccess = false;
-      if (tag && name) {
-        isSuccess = await checkWaitFuncResByFile({
-          name,
-          tag,
-          interval,
-          timeout,
-          tempDir,
-        });
-      }
-      console.log("访问标识完成", isSuccess);
-      if (isSuccess) {
-        process.exit(0);
-      } else {
-        process.exit(1);
-      }
-    });
-
+    .addCommand(
+      new CustomCommand()
+        .name("transform")
+        .description("转换文件")
+        .addOptions(getCommonOptions())
+        .option("-w,--watch", "启用观察模式")
+        .action(async (options) => {
+          const cliUserConfig = await resolveCliUserConfig(options);
+          const finalConfig = mergeConfig(cliUserConfig, {
+            transform: {
+              watch: options.watch,
+            },
+          });
+          await transform(finalConfig);
+        })
+    )
+    .addCommand(
+      new CustomCommand().name("clean").action(() => {
+        clean();
+      })
+    )
+    .addCommand(
+      new CustomCommand()
+        .name("parallel")
+        .description("运行多个npm script")
+        .option("-c,--config <string>", "配置文件路径")
+        .addOptions(getCommonOptions())
+        .action(async (options) => {
+          const cliUserConfig = await resolveCliUserConfig(options);
+          const finalConfig = mergeConfig(cliUserConfig, {});
+          await parallel(finalConfig);
+        })
+    )
+    .addCommand(
+      new CustomCommand()
+        .name(WaitCmdName)
+        .description("parallel命令利用此命令来达到wait功能")
+        .option("-n,--name <string>", "等待的命令名称")
+        .option("-f,--absoluteFilePath <string>", "要轮询检查的文件的绝对路径")
+        .option("-tg,--tag <string>", "等待的函数运行标志")
+        .option("-td,--tempDir <string>", "临时文件夹")
+        .option("-i,--interval <string>", "检测间隔")
+        .option("-tm,--timeout <string>", "超时时间")
+        .action(async (options) => {
+          const { name = "", absoluteFilePath = "" } = options;
+          let checkResult: CheckWaitFileResult | undefined = undefined;
+          if (absoluteFilePath && name) {
+            checkResult = await checkWaitFile({
+              name,
+              absoluteFilePath,
+            });
+          }
+          if (checkResult?.content.result) {
+            process.exit(0);
+          } else {
+            process.exit(1);
+          }
+        })
+    )
+    .addCommand(
+      new CustomCommand()
+        .name("release")
+        .description("release")
+        .addOptions(getCommonOptions())
+        .action(async (options) => {
+          const cliUserConfig = await resolveCliUserConfig(options);
+          const finalConfig = mergeConfig(cliUserConfig, {});
+          await release(finalConfig);
+        })
+    );
   program.parse();
 };

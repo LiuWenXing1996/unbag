@@ -21,7 +21,10 @@ export default defineConfig({
       { text: "开始", link: "/guide/" },
       {
         text: "命令",
-        items: [{ text: "transform", link: "/commands/transform" }],
+        items: [
+          { text: "transform", link: "/commands/transform" },
+          { text: "parallel", link: "/commands/parallel" },
+        ],
       },
     ],
 

@@ -1,6 +1,6 @@
 {
   "name": "unbag",
-  "version": "0.0.14",
+  "version": "0.3.0",
   "description": "一个专门用来开发npm工具的包",
   "files": [
     "dist"
@@ -17,7 +17,8 @@
   },
   "scripts": {
     "build": "tsx ./src/run.ts transform",
-    "dev": "tsx ./src/run.ts transform -w"
+    "dev": "tsx ./src/run.ts transform -w",
+    "release": "tsx ./src/run.ts release"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -27,21 +28,33 @@
     "bundle-require": "^4.0.2",
     "chokidar": "^3.6.0",
     "commander": "^10.0.0",
+    "commit-and-tag-version": "^12.4.1",
     "concurrently": "^8.2.2",
+    "conventional-changelog": "^6.0.0",
+    "conventional-changelog-conventionalcommits": "^8.0.0",
+    "conventional-commits-parser": "^6.0.0",
+    "conventional-recommended-bump": "^10.0.0",
     "debounce-promise": "^3.1.2",
+    "detect-indent": "^7.0.1",
+    "detect-newline": "^4.0.1",
     "esbuild": "^0.20.1",
+    "execa": "^9.2.0",
     "lodash": "^4.17.21",
     "memfs": "^4.7.7",
     "path-browserify": "^1.0.1",
+    "semver": "^7.6.2",
     "typescript": "~5.1.6",
     "uuid": "^9.0.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
+    "@types/conventional-changelog": "^3.1.5",
     "@types/debounce-promise": "^3.1.9",
     "@types/lodash": "^4.14.202",
     "@types/path-browserify": "^1.0.2",
+    "@types/semver": "^7.5.8",
     "@types/uuid": "^9.0.2",
+    "conventional-changelog-cli": "^5.0.0",
     "tsx": "^4.7.1"
   }
 }

@@ -17,3 +17,45 @@ export const filterNullable = <T>(
 export function arraify<T>(target: T | T[]): T[] {
   return Array.isArray(target) ? target : [target];
 }
+
+export type SafeObj<T> = {
+  [k in keyof T as `$${string & k}`]-?: () => T[k] extends object
+    ? SafeObj<T[k]>
+    : NonNullable<T[k]>;
+};
+
+export const safeObj = <T extends object>(
+  obj: T,
+  name: string,
+  config: {
+    errorMsgFormat?: (objName: string, key: string) => string;
+  } = {}
+) => {
+  const errorMsgFormat =
+    config.errorMsgFormat ||
+    ((objName: string, key: string) => {
+      return `${objName} [${key}] undefined or null`;
+    });
+  const objName = name;
+  const p = new Proxy({} as SafeObj<T>, {
+    get(_target, property, _receiver) {
+      return () => {
+        if (typeof property !== "string") {
+          throw new Error(`safely ${objName} property type must string`);
+        }
+        const key = property.slice(1);
+        const value = obj[key];
+        if (value === undefined || value === null) {
+          throw new Error(errorMsgFormat(objName, key));
+        }
+        if (typeof value === "object") {
+          return safeObj(value, `${objName}.${key}`, config);
+        }
+        return value;
+      };
+    },
+  });
+  return p;
+};
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

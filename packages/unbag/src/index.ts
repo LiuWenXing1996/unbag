@@ -1,4 +1,12 @@
 export { read } from "./utils/read";
-export { TsToJsPlugin } from "./plugins/ts-to-js";
-export { TsToDtsPlugin } from "./plugins/ts-to-dts";
-export { defineConfig } from "./utils/config";
+export { TsToJsTransformPlugin } from "./commands/transform/plugins/ts-to-js";
+export { TsToDtsTransformPlugin } from "./commands/transform/plugins/ts-to-dts";
+export { defineTransformPlugin } from "./commands/transform/plugin";
+export { defineUserConfig } from "./utils/config";
+
+// export types
+
+export {
+  type TransformPlugin,
+  type TransformPluginInputFile,
+} from "./commands/transform/plugin";

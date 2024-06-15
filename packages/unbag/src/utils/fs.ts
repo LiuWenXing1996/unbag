@@ -2,20 +2,40 @@ import { parse } from "yaml";
 import path from "./path";
 import { Volume, createFsFromVolume, type IFs } from "memfs";
 import type * as _FsPromisesApi from "node:fs/promises";
+import { MaybePromise } from "./types";
 export type FsPromisesApi = typeof _FsPromisesApi;
 export type WriteFileData = Parameters<FsPromisesApi["writeFile"]>[1];
 export type WriteFileOptions = Parameters<FsPromisesApi["writeFile"]>[2];
 export type FsUtils = ReturnType<typeof createFsUtils> & FsPromisesApi;
 
-export const createFsUtils = (fs: FsPromisesApi) => {
-  const { readFile, readdir, stat, mkdir, writeFile, rm } = fs;
+export const createFsUtils = (fs: Partial<FsPromisesApi>) => {
+  const { $readFile, $readdir, $stat, $mkdir, $writeFile, $rm } = new Proxy(
+    {} as {
+      [key in keyof FsPromisesApi as `$${key}`]: () => FsPromisesApi[key];
+    },
+    {
+      get(_target, property, _receiver) {
+        return () => {
+          if (typeof property !== "string") {
+            throw new Error(`fs property type must string`);
+          }
+          const key = property.slice(1);
+          const value = fs[key];
+          if (!value) {
+            throw new Error(`fs [${key}] undefined`);
+          }
+          return value;
+        };
+      },
+    }
+  );
   const YAML = {
     parse,
   };
 
   const readJson = async <T>(path: string): Promise<T> => {
     let jsonObj: T | undefined = undefined;
-    const content = (await readFile(path, "utf-8")) as string;
+    const content = (await $readFile()(path, "utf-8")) as string;
     jsonObj = JSON.parse(content || "") as T;
     return jsonObj;
   };
@@ -30,9 +50,38 @@ export const createFsUtils = (fs: FsPromisesApi) => {
     return jsonObj;
   };
 
+  const modifyJson = async <T, V = T>(
+    path: string,
+    modify: (input?: T) => MaybePromise<V | undefined>
+  ) => {
+    let oldContent: string | undefined = undefined;
+    let oldJson: T | undefined = undefined;
+    try {
+      oldContent = (await $readFile()(path, "utf-8")) as string;
+      oldJson = JSON.parse(oldContent || "");
+    } catch (error) {}
+    const newJson = (await modify(oldJson)) || "";
+
+    const detectIndent = await import("detect-indent");
+    const detectNewline = await import("detect-newline");
+    const DEFAULT_INDENT = 2;
+    const CRLF = "\r\n";
+    const LF = "\n";
+    const indent =
+      detectIndent.default(oldContent || "").indent || DEFAULT_INDENT;
+    const newline = detectNewline.detectNewline(oldContent || "");
+
+    let newContent = JSON.stringify(newJson, null, indent);
+    if (newline === CRLF) {
+      newContent = newContent.replace(/\n/g, CRLF) + CRLF;
+    }
+    newContent = newContent + LF;
+    await outputFile(path, newContent, "utf-8");
+  };
+
   const readYaml = async <T>(path: string): Promise<T> => {
     let obj: T | undefined = undefined;
-    const content = (await readFile(path, "utf-8")) as string;
+    const content = (await $readFile()(path, "utf-8")) as string;
     obj = YAML.parse(content || "") as T;
     return obj;
   };
@@ -51,10 +100,10 @@ export const createFsUtils = (fs: FsPromisesApi) => {
     const files: string[] = [];
     dir = dir || "/";
     const getFiles = async (currentDir: string) => {
-      const fileList = (await readdir(currentDir)) as string[];
+      const fileList = (await $readdir()(currentDir)) as string[];
       for (const file of fileList) {
         const name = path.join(currentDir, file);
-        if ((await stat(name)).isDirectory()) {
+        if ((await $stat()(name)).isDirectory()) {
           await getFiles(name);
         } else {
           files.push(name);
@@ -67,16 +116,16 @@ export const createFsUtils = (fs: FsPromisesApi) => {
 
   const exists = async (path: string) => {
     try {
-      await stat(path);
+      await $stat()(path);
       return true;
-    } catch {
+    } catch (e) {
       return false;
     }
   };
 
   const isFile = async (path: string) => {
     try {
-      const _stat = await stat(path);
+      const _stat = await $stat()(path);
       return _stat.isFile();
     } catch {
       return false;
@@ -85,7 +134,7 @@ export const createFsUtils = (fs: FsPromisesApi) => {
 
   const isDirectory = async (path: string) => {
     try {
-      const _stat = await stat(path);
+      const _stat = await $stat()(path);
       return _stat.isDirectory();
     } catch {
       return false;
@@ -100,10 +149,9 @@ export const createFsUtils = (fs: FsPromisesApi) => {
     const dir = path.dirname(file);
     const fileExist = await exists(dir);
     if (!fileExist) {
-      // console.log(dir)
-      await mkdir(dir, { recursive: true });
+      await $mkdir()(dir, { recursive: true });
     }
-    await writeFile(file, data, options);
+    await $writeFile()(file, data, options);
   };
 
   const copyFromFs = async (
@@ -124,12 +172,12 @@ export const createFsUtils = (fs: FsPromisesApi) => {
   };
 
   const remove = async (path: string) => {
-    return await rm(path, { recursive: true, force: true });
+    return await $rm()(path, { recursive: true, force: true });
   };
 
   return {
-    ...fs,
     readJson,
+    modifyJson,
     remove,
     tryReadJson,
     readYaml,
