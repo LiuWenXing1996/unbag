@@ -77,6 +77,9 @@ importers:
       bundle-require:
         specifier: ^4.0.2
         version: 4.0.2(esbuild@0.20.1)
+      chalk:
+        specifier: ^5.3.0
+        version: 5.3.0
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
@@ -101,6 +104,9 @@ importers:
       conventional-recommended-bump:
         specifier: ^10.0.0
         version: 10.0.0
+      dayjs:
+        specifier: ^1.11.11
+        version: 1.11.11
       debounce-promise:
         specifier: ^3.1.2
         version: 3.1.2
@@ -137,6 +143,9 @@ importers:
       yaml:
         specifier: ^2.3.4
         version: 2.3.4
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@types/conventional-changelog':
         specifier: ^3.1.5
@@ -2213,7 +2222,6 @@ packages:
   /chalk@5.3.0:
     resolution: {integrity: sha512-dLitG79d+GV1Nb/VYcCDFivJeK1hiukt9QjRNVOsUtTy1rR1YJsmpGGTZ3qJos+uw7WmWF4wUwBd9jxjocFC2w==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
-    dev: true
 
   /changeset-conventional-commits@0.2.5:
     resolution: {integrity: sha512-2nNy3nLrubGgJz0/NKvxDMhW2GmEZRczCus9taNF8V8sFc4eoMCPPpHOIGTECSQXcqFdod39DlEVnhr0vP1Ceg==}
@@ -2907,6 +2915,10 @@ packages:
 
   /dateformat@3.0.3:
     resolution: {integrity: sha512-jyCETtSl3VMZMWeRo7iY1FL19ges1t55hMo5yaam4Jrsm5EPL89UQkoQRyiI+Yf4k8r2ZpdngkV8hr1lIdjb3Q==}
+
+  /dayjs@1.11.11:
+    resolution: {integrity: sha512-okzr3f11N6WuqYtZSvm+F776mB41wRZMhKP+hc34YdW+KmtYYK9iqvHSwo2k9FEH3fhGXvOPV6yz2IcSrfRUDg==}
+    dev: false
 
   /debounce-promise@3.1.2:
     resolution: {integrity: sha512-rZHcgBkbYavBeD9ej6sP56XfG53d51CD4dnaw989YX/nZ/ZJfgRx/9ePKmTNiUiyQvh4mtrMoS3OAWW+yoYtpg==}
@@ -6175,4 +6187,8 @@ packages:
   /yoctocolors@2.0.2:
     resolution: {integrity: sha512-Ct97huExsu7cWeEjmrXlofevF8CvzUglJ4iGUet5B8xn1oumtAZBpHU4GzYuoE6PVqcZ5hghtBrSlhwHuR1Jmw==}
     engines: {node: '>=18'}
+    dev: false
+
+  /zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
     dev: false

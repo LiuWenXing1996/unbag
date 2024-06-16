@@ -8,11 +8,13 @@ import { ReleaseConfig, releaseDefaultConfig } from "../commands/release";
 import { arraify, isObject, safeObj } from "./common";
 import { message } from "./message";
 import { DeepPartial } from "./types";
+import { LogConfig, logDefaultConfig } from "./log";
 
 export interface FinalUserConfig {
   root: string;
   configFileResolvedPath?: string;
   tempDir: string;
+  log: LogConfig;
   transform: TransformConfig;
   parallel: ParallelConfig;
   release: ReleaseConfig;
@@ -25,6 +27,7 @@ export type UserConfig = DeepPartial<
 export const defaultConfig: FinalUserConfig = {
   root: process.cwd(),
   tempDir: "./node_modules/.unbag",
+  log: logDefaultConfig,
   transform: transformDefaultConfig,
   parallel: parallelDefaultConfig,
   release: releaseDefaultConfig,

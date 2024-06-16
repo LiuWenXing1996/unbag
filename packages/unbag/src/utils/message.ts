@@ -1,4 +1,7 @@
 export const message = {
+  releaseMainCheckFalse: (currentBranch: string, mainBranchName: string) => {
+    return `你现在在分支 ${currentBranch},请使用 git checkout ${mainBranchName} 切换到主分支 ${mainBranchName} 操作`;
+  },
   userConfigFileNotFound: (filePath: string) => {
     return `没有找到配置文件: ${filePath}`;
   },

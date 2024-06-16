@@ -5,6 +5,7 @@ import {
 } from "./src";
 
 export default defineUserConfig({
+  log: {},
   transform: {
     sourcemap: true,
     plugins: [

@@ -59,3 +59,10 @@ export const safeObj = <T extends object>(
 };
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+export const useExeca = async () => {
+  return await import("execa");
+};
+
+export const useChalk = async () => {
+  return await import("chalk");
+};

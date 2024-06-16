@@ -13,6 +13,14 @@ import {
 } from "./changelog";
 import { CommitData, commit } from "./commit";
 import { TagData, tag } from "./tag";
+import { getCurrentBranch } from "../../utils/git";
+import { useChalk } from "../../utils/common";
+
+export enum LogType {
+  message = "message",
+  warn = "warn",
+  error = "error",
+}
 
 export interface ReleaseConfigPkgFileContent {
   version: string;
@@ -25,6 +33,10 @@ export interface ReleaseChangelogFileContent {
 }
 
 export interface ReleaseConfig {
+  mainBranchName: string;
+  disableMainBranchCheck?: boolean;
+  mainBranchCheck: (config: FinalUserConfig) => MaybePromise<boolean>;
+  disableBranchCleanCheck?: boolean;
   scope?: string;
   pkgFilePath: string;
   pkgFilePathResolve: (config: FinalUserConfig) => MaybePromise<string>;
@@ -67,9 +79,29 @@ export interface ReleaseConfig {
     config: FinalUserConfig,
     data: CommitData
   ) => MaybePromise<string[]>;
+
+  logPrefix: boolean;
+  logPrefixName: string;
+  logPrefixTime: boolean;
+  logPrefixTimeFormat: string;
+  logss: (params: {
+    config: FinalUserConfig;
+    content: string;
+    type: LogType;
+  }) => Promise<string>;
 }
 
 export const releaseDefaultConfig: ReleaseConfig = {
+  mainBranchName: "main",
+  mainBranchCheck: async (config) => {
+    const { release } = config;
+    const { mainBranchName } = release;
+    const currentBranchName = await getCurrentBranch();
+    if (currentBranchName === mainBranchName) {
+      return true;
+    }
+    return false;
+  },
   pkgFilePath: "package.json",
   pkgFilePathResolve: async (config) => {
     const { release, root } = config;
@@ -170,6 +202,16 @@ export const releaseDefaultConfig: ReleaseConfig = {
     const { bumpRes } = data;
     return `release${scope ? `(${scope})` : ``}: ${bumpRes?.version}`;
   },
+  logPrefix: true,
+  logPrefixName: "unbag",
+  logPrefixTime: true,
+  logPrefixTimeFormat: "",
+  log: async ({ config, content, type }) => {
+    const { release } = config;
+    const { tagPrefix } = release;
+    const chalk = await useChalk();
+    return content;
+  },
 };
 
 // TODO 实现 scope?
@@ -179,7 +221,20 @@ export const release = async (config: FinalUserConfig) => {
   // TODO:检查分支是否干净
   // TODO:主分支？？？
   const { release } = config;
-  const { disableWriteVersion, writeVersion } = release;
+  const {
+    disableWriteVersion,
+    writeVersion,
+    disableMainBranchCheck,
+    mainBranchCheck,
+    disableBranchCleanCheck,
+  } = release;
+  if (!disableMainBranchCheck) {
+    const res = await mainBranchCheck(config);
+    if (!res) {
+      throw new Error();
+    }
+  } else {
+  }
   const bumpRes = await bump(config);
   console.log({ bumpRes });
   if (!disableWriteVersion) {
