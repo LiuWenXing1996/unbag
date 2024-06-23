@@ -1,48 +1,113 @@
-import { MaybePromise } from "../../utils/types";
-import { filterNullable } from "../../utils/common";
+import { filterNullable, wrapperZodLazyResult } from "../../utils/common";
 import { FinalUserConfig } from "../../utils/config";
+import z from "zod";
+import { defineConfigSchema } from "../../utils/schema";
 
-export interface TransformPluginInputFile {
-  path: string;
-  content: string | Buffer;
-  sourcemap?: string;
-}
-export interface TransformPluginOutputFile {
-  path: string;
-  content: string | Buffer;
-  sourcemap?: string;
-}
+// TODO:全部使用 zod 也太复杂了，不好调试
+// 感觉改一改 merge config 的数组合并行为
+// 然后在运行的时候手动做校验更合理些
+// TODO:是否有可能利用zod 做一个纯运行时安全的东西？感觉做这个意义是有的，但是，需要用起来不能太痛苦，试了下，现在的 zod
+// 一旦嵌套和循环多了起来可太痛苦了，所以直接讲 ts==>zod 自动化更合理一点
+
+export const TransformPluginInputFileSchema = defineConfigSchema(() =>
+  z.object({
+    path: z.string(),
+    content: z.union([z.string(), z.instanceof(Buffer)]),
+    sourcemap: z.string().optional(),
+  })
+);
+
+export type TransformPluginInputFile = z.infer<
+  typeof TransformPluginInputFileSchema
+>;
+
+export const TransformPluginOutputFileSchema = z.object({
+  path: z.string(),
+  content: z.union([z.string(), z.instanceof(Buffer)]),
+  sourcemap: z.string().optional(),
+});
+
+export type TransformPluginOutputFile = z.infer<
+  typeof TransformPluginOutputFileSchema
+>;
 
 export type TransformPlugin = {
   name: string;
   match: (
     file: TransformPluginInputFile,
     pluginConfig: TransformPluginTreeNodeConfig
-  ) => MaybePromise<boolean>;
+  ) => Promise<boolean>;
   beforeTransform?: (
     input: TransformPluginInputFile[],
     finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
-  ) => MaybePromise<
+  ) => Promise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
   >;
   transform?: (
     input: TransformPluginInputFile,
     finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
-  ) => MaybePromise<
+  ) => Promise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
   >;
   afterTransform?: (
     input: TransformPluginInputFile[],
     finalUserConfig: FinalUserConfig,
     pluginConfig?: TransformPluginTreeNodeConfig
-  ) => MaybePromise<
+  ) => Promise<
     TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
   >;
 };
 
+export const TransformPluginMatchSchema = defineConfigSchema(() =>
+  z
+    .function()
+    .args(TransformPluginInputFileSchema, TransformPluginTreeNodeConfigSchema)
+    .returns(z.promise(z.boolean()))
+);
+
+export const TransformPluginSchema: z.ZodSchema<TransformPlugin> = z.lazy(() =>
+  wrapperZodLazyResult(
+    z.object({
+      name: z.string(),
+      match: TransformPluginMatchSchema,
+      beforeTransform: z
+        .function()
+        .args()
+        .returns(
+          z.promise(
+            z.union([
+              TransformPluginOutputFileSchema,
+              z.array(TransformPluginOutputFileSchema),
+              z.undefined(),
+            ])
+          )
+        )
+        .optional(),
+    })
+  )
+);
+
 export const defineTransformPlugin = (p: TransformPlugin) => p;
+
+export const TransformPluginTreeNodeConfigSchema: z.ZodSchema<TransformPluginTreeNodeConfig> =
+  z.lazy(() =>
+    wrapperZodLazyResult(
+      z.object({
+        output: z.string().optional(),
+        match: z
+          .function()
+          .args(
+            TransformPluginInputFileSchema,
+            TransformPluginTreeNodeConfigSchema,
+            TransformPluginMatchSchema
+          )
+          .returns(z.promise(z.boolean()))
+          .optional(),
+      })
+    )
+  );
 
 export interface TransformPluginTreeNodeConfig {
   output?: string;
@@ -50,7 +115,7 @@ export interface TransformPluginTreeNodeConfig {
     file: TransformPluginInputFile,
     pluginConfig?: TransformPluginTreeNodeConfig,
     pluginMatch?: TransformPlugin["match"]
-  ) => MaybePromise<boolean>;
+  ) => Promise<boolean>;
 }
 
 const toFileArray = (
@@ -69,6 +134,19 @@ const outputFileToInputFile = (
 const outputFileListToInputFileList = (list: TransformPluginOutputFile[]) =>
   list.map((e) => outputFileToInputFile(e));
 
+export const TransformPluginTreeNodeSchema =
+  defineConfigSchema<TransformPluginTreeNode>(() =>
+    z.object({
+      plugin: TransformPluginSchema,
+      children: z.array(TransformPluginTreeNodeSchema).optional(),
+      config: TransformPluginTreeNodeConfigSchema.optional(),
+    })
+  );
+
+export const TransformPluginTreeSchema =
+  defineConfigSchema<TransformPluginTree>(() =>
+    z.array(TransformPluginTreeNodeSchema)
+  );
 export type TransformPluginTree = TransformPluginTreeNode[];
 
 export interface TransformPluginTreeNode {
@@ -80,7 +158,7 @@ export interface TransformPluginTreeNode {
 export type TransformPluginWriteFileFunc = (
   files: TransformPluginOutputFile[],
   outputPath: string
-) => MaybePromise<void>;
+) => Promise<void>;
 
 export const execTransformPluginNode = async (
   node: TransformPluginTreeNode,

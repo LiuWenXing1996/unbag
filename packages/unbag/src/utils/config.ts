@@ -2,30 +2,55 @@ import { ParallelConfig, parallelDefaultConfig } from "../commands/parallel";
 import { TransformConfig, transformDefaultConfig } from "../commands/transform";
 import { createFsUtils } from "./fs";
 import * as fsPromises from "node:fs/promises";
-import path from "../utils/path";
+import path, { PathConfig, PathConfigDefault } from "../utils/path";
 import { bundleRequire } from "bundle-require";
 import { ReleaseConfig, releaseDefaultConfig } from "../commands/release";
-import { arraify, isObject, safeObj } from "./common";
+import { arraify, isObject, safeObj, wrapperZodLazyResult } from "./common";
 import { message } from "./message";
 import { DeepPartial } from "./types";
-import { LogConfig, logDefaultConfig } from "./log";
+import { LogConfig, LogConfigSchema } from "./log";
+import { GitConfig, GitConfigDefault } from "./git";
+import { z } from "zod";
+import { defineConfigSchema } from "./schema";
 
 export interface FinalUserConfig {
   root: string;
-  configFileResolvedPath?: string;
-  tempDir: string;
+  // configFileResolvedPath?: string;
+  // git: GitConfig;
+  // path: PathConfig;
+  // tempDir: string;
   log: LogConfig;
-  transform: TransformConfig;
-  parallel: ParallelConfig;
-  release: ReleaseConfig;
+  // transform: TransformConfig;
+  // parallel: ParallelConfig;
+  // release: ReleaseConfig;
 }
 
+export const FinalUserConfigSchema: z.ZodSchema<FinalUserConfig> = z.lazy(() =>
+  wrapperZodLazyResult(
+    z
+      .object({
+        root: z.string().default("() => process.cwd()"),
+        log: LogConfigSchema.default(LogConfigSchema.parse({})),
+      })
+      .default({})
+  )
+);
+// defineConfigSchema<FinalUserConfig>(() => {
+//   return z
+//     .object({
+//       // root: z.string().default("() => process.cwd()"),
+//       log: LogConfigSchema,
+//     })
+//     .default({});
+// });
 export type UserConfig = DeepPartial<
   Omit<FinalUserConfig, "configFileResolvedPath" | "root">
 >;
 
 export const defaultConfig: FinalUserConfig = {
   root: process.cwd(),
+  git: GitConfigDefault,
+  path: PathConfigDefault,
   tempDir: "./node_modules/.unbag",
   log: logDefaultConfig,
   transform: transformDefaultConfig,

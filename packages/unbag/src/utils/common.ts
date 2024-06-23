@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export function isObject(value: unknown): value is Record<string, any> {
   return Object.prototype.toString.call(value) === "[object Object]";
 }
@@ -65,4 +67,26 @@ export const useExeca = async () => {
 
 export const useChalk = async () => {
   return await import("chalk");
+};
+
+export const wrapperZodLazyResult = <T extends z.ZodType>(zodType: T) => {
+  return zodType as z.ZodSchema<z.output<typeof zodType>>;
+};
+
+export const defineZodFunctionWithDefault = <
+  Args extends z.ZodTuple<any, any>,
+  Returns extends z.ZodTypeAny,
+  ArgsTsType = z.infer<Args>
+>(
+  zodFunction: z.ZodFunction<Args, Returns>,
+  // @ts-ignore
+  defaultValue?: (...arg0: ArgsTsType) => z.infer<Returns>
+) => {
+  if (defaultValue) {
+    // @ts-ignore
+    return zodFunction.default(() => {
+      return defaultValue;
+    });
+  }
+  return zodFunction;
 };

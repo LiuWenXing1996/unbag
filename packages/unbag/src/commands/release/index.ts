@@ -3,7 +3,12 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { FinalUserConfig, mergeConfig } from "../../utils/config";
 import { type ReleaseType } from "semver";
-import { BumpResult, bump } from "./bump";
+import {
+  BumpResult,
+  ReleaseBumpConfig,
+  ReleaseBumpConfigDefault,
+  bump,
+} from "./bump";
 import { message } from "../../utils/message";
 import { createFsUtils } from "../../utils/fs";
 import {
@@ -15,6 +20,11 @@ import { CommitData, commit } from "./commit";
 import { TagData, tag } from "./tag";
 import { getCurrentBranch } from "../../utils/git";
 import { useChalk } from "../../utils/common";
+import {
+  ReleaseBranchConfig,
+  ReleaseBranchConfigDefault,
+  branch,
+} from "./branch";
 
 export enum LogType {
   message = "message",
@@ -33,21 +43,19 @@ export interface ReleaseChangelogFileContent {
 }
 
 export interface ReleaseConfig {
-  mainBranchName: string;
-  disableMainBranchCheck?: boolean;
-  mainBranchCheck: (config: FinalUserConfig) => MaybePromise<boolean>;
-  disableBranchCleanCheck?: boolean;
   scope?: string;
-  pkgFilePath: string;
-  pkgFilePathResolve: (config: FinalUserConfig) => MaybePromise<string>;
-  readPkgFile: (
-    config: FinalUserConfig
-  ) => MaybePromise<ReleaseConfigPkgFileContent>;
-  disableWriteVersion?: boolean;
-  writeVersion: (
-    config: FinalUserConfig,
-    bumpRes: BumpResult
-  ) => MaybePromise<void>;
+  branch: ReleaseBranchConfig;
+  bump: ReleaseBumpConfig;
+  // pkgFilePath: string;
+  // pkgFilePathResolve: (config: FinalUserConfig) => MaybePromise<string>;
+  // readPkgFile: (
+  //   config: FinalUserConfig
+  // ) => MaybePromise<ReleaseConfigPkgFileContent>;
+  // disableWriteVersion?: boolean;
+  // writeVersion: (
+  //   config: FinalUserConfig,
+  //   bumpRes: BumpResult
+  // ) => MaybePromise<void>;
   changelogFilePath: string;
   changelogFilePathResolve: (config: FinalUserConfig) => MaybePromise<string>;
   readChangelogFile: (
@@ -79,29 +87,10 @@ export interface ReleaseConfig {
     config: FinalUserConfig,
     data: CommitData
   ) => MaybePromise<string[]>;
-
-  logPrefix: boolean;
-  logPrefixName: string;
-  logPrefixTime: boolean;
-  logPrefixTimeFormat: string;
-  logss: (params: {
-    config: FinalUserConfig;
-    content: string;
-    type: LogType;
-  }) => Promise<string>;
 }
 
 export const releaseDefaultConfig: ReleaseConfig = {
-  mainBranchName: "main",
-  mainBranchCheck: async (config) => {
-    const { release } = config;
-    const { mainBranchName } = release;
-    const currentBranchName = await getCurrentBranch();
-    if (currentBranchName === mainBranchName) {
-      return true;
-    }
-    return false;
-  },
+  bump: ReleaseBumpConfigDefault,
   pkgFilePath: "package.json",
   pkgFilePathResolve: async (config) => {
     const { release, root } = config;
@@ -202,39 +191,22 @@ export const releaseDefaultConfig: ReleaseConfig = {
     const { bumpRes } = data;
     return `release${scope ? `(${scope})` : ``}: ${bumpRes?.version}`;
   },
-  logPrefix: true,
-  logPrefixName: "unbag",
-  logPrefixTime: true,
-  logPrefixTimeFormat: "",
-  log: async ({ config, content, type }) => {
-    const { release } = config;
-    const { tagPrefix } = release;
-    const chalk = await useChalk();
-    return content;
-  },
+  branch: ReleaseBranchConfigDefault,
 };
 
 // TODO 实现 scope?
 // 还有commit？
 // 甚至 test?
 export const release = async (config: FinalUserConfig) => {
+  const branchResult = await branch({ config });
+  if (!branchResult.checkPass) {
+    return;
+  }
+
   // TODO:检查分支是否干净
   // TODO:主分支？？？
   const { release } = config;
-  const {
-    disableWriteVersion,
-    writeVersion,
-    disableMainBranchCheck,
-    mainBranchCheck,
-    disableBranchCleanCheck,
-  } = release;
-  if (!disableMainBranchCheck) {
-    const res = await mainBranchCheck(config);
-    if (!res) {
-      throw new Error();
-    }
-  } else {
-  }
+  const { disableWriteVersion, writeVersion } = release;
   const bumpRes = await bump(config);
   console.log({ bumpRes });
   if (!disableWriteVersion) {

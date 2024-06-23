@@ -1,4 +1,23 @@
 export const message = {
+  releaseCurrentBranchUndefined: () => {
+    return `你现在没有处在任何分支,请切换到某分支下进行操作`;
+  },
+  releaseCurrentBranchName: ({
+    currentBranchName,
+  }: {
+    currentBranchName: string;
+  }) => {
+    return `你现在处在分支 ${currentBranchName}`;
+  },
+  releaseMainBranchCheckFalse: ({
+    currentBranchName,
+    mainBranchName,
+  }: {
+    currentBranchName: string;
+    mainBranchName: string;
+  }) => {
+    return `你现在处在分支 ${currentBranchName},请使用 git checkout ${mainBranchName} 切换到主分支 ${mainBranchName} 操作`;
+  },
   releaseMainCheckFalse: (currentBranch: string, mainBranchName: string) => {
     return `你现在在分支 ${currentBranch},请使用 git checkout ${mainBranchName} 切换到主分支 ${mainBranchName} 操作`;
   },

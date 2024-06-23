@@ -7,6 +7,81 @@ import type { Bumper } from "conventional-recommended-bump";
 //@ts-ignore
 import type { BumperRecommendation } from "conventional-recommended-bump";
 import { FinalUserConfig } from "../../utils/config";
+import { MaybePromise } from "../../utils/types";
+import { usePath } from "../../utils/path";
+import { useFs } from "../../utils/fs";
+
+export interface VersionFileFileContent {
+  version: string;
+}
+
+export interface ReleaseBumpConfig {
+  versionFilePath: string;
+  versionFilePathResolve: (params: {
+    config: FinalUserConfig;
+  }) => MaybePromise<string>;
+  versionFileRead: (params: {
+    config: FinalUserConfig;
+  }) => MaybePromise<VersionFileFileContent>;
+  versionFileWrite: (params: {
+    config: FinalUserConfig;
+    bumpRes: BumpResult;
+  }) => MaybePromise<void>;
+  versionFileWriteDisable?: boolean;
+}
+
+export const ReleaseBumpConfigDefault: ReleaseBumpConfig = {
+  versionFilePath: "package.json",
+  versionFilePathResolve: async ({ config }) => {
+    const {
+      release: {
+        bump: { versionFilePath },
+      },
+      root,
+    } = config;
+    const path = usePath();
+    const absolutePath = path.resolve(root, versionFilePath);
+    return absolutePath;
+  },
+  versionFileRead: async ({ config }) => {
+    const {
+      release: {
+        bump: { versionFilePathResolve },
+      },
+    } = config;
+    const pkgFileAbsolutePath = await versionFilePathResolve({ config });
+    const fs = useFs();
+    const content = await fs.readJson<VersionFileFileContent>(
+      pkgFileAbsolutePath
+    );
+    return content;
+  },
+  versionFileWrite: async ({ config, bumpRes }) => {
+    const {
+      release: {
+        bump: { versionFilePathResolve },
+      },
+    } = config;
+    const pkgFileAbsolutePath = await versionFilePathResolve({ config });
+    const version = bumpRes?.version;
+    if (!version) {
+      return;
+    }
+    if (version === bumpRes.oldVersion) {
+      return;
+    }
+    const fs = useFs();
+    await fs.modifyJson<VersionFileFileContent>(
+      pkgFileAbsolutePath,
+      (value) => {
+        return {
+          ...value,
+          version,
+        };
+      }
+    );
+  },
+};
 
 export const VERSIONS = ["major", "minor", "patch"] as const;
 
@@ -98,6 +173,20 @@ export interface BumpResult {
   releaseType?: ReleaseType;
   commits?: Commit[];
 }
+
+export const useReleaseBump = ({ config }: { config: FinalUserConfig }) => {
+  const {
+    release: {
+      bump: { versionFileRead },
+    },
+  } = config;
+  return async () => {
+    const versionFileContent = await versionFileRead({ config });
+    if (!versionFileContent) {
+      throw new Error(message.releaseBumpNotFoundPkgFile());
+    }
+  };
+};
 
 export const bump = async (config: FinalUserConfig): Promise<BumpResult> => {
   const { release } = config;

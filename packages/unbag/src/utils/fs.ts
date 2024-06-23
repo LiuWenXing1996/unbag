@@ -2,6 +2,7 @@ import { parse } from "yaml";
 import path from "./path";
 import { Volume, createFsFromVolume, type IFs } from "memfs";
 import type * as _FsPromisesApi from "node:fs/promises";
+import fs from "node:fs/promises";
 import { MaybePromise } from "./types";
 export type FsPromisesApi = typeof _FsPromisesApi;
 export type WriteFileData = Parameters<FsPromisesApi["writeFile"]>[1];
@@ -210,4 +211,9 @@ export const createVfs = (): VirtualFileSystem => {
   };
 
   return vfs;
+};
+
+export const useFs = () => {
+  const fsUtils = createFsUtils(fs);
+  return fsUtils;
 };
