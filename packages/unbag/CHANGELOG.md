@@ -1,6 +1,148 @@
-fhsjdkfh
+
 
 [comment]: # (!!!ChangelogHeaderDividerTag!!!)
+
+## 0.6.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.5.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.4.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.10.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.9.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.8.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.7.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.6.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.5.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+## 0.4.0 (2024-07-04)
+
+### Features
+
+* 更改配置文件的读取方式 ([f39e893](https://github.com/LiuWenXing1996/unbag/commit/f39e89308e69751fe0c1bf94c4d7691143908414))
+* build 命令改为 transform ([49bd493](https://github.com/LiuWenXing1996/unbag/commit/49bd49341e7af6ff21db348ede5e38f7ba0cead4))
+* **unbag:** temp zod schema, ([7f511ee](https://github.com/LiuWenXing1996/unbag/commit/7f511ee708d8fac9a9ac9818b88052cb45722df4))
+* **unbag:** test ([69f070c](https://github.com/LiuWenXing1996/unbag/commit/69f070cd872c3db252961a5770d377e567faa935))
+* **unbag:** test ([d4b28c8](https://github.com/LiuWenXing1996/unbag/commit/d4b28c8d5d0cbc0ca4c8fd07404b08bfa5e8335a))
+
+### Bug Fixes
+
+* **unbag:** esm error ([f5e817d](https://github.com/LiuWenXing1996/unbag/commit/f5e817d81068e4307ca7425f738a5b7edc232133))
+
+ag!!!)
 
 ## [0.3.0](https://github.com/LiuWenXing1996/unbag/compare/v1.1.0...v0.3.0) (2024-06-14)
 
@@ -486,4 +628,3 @@ ag!!!)
 
 [comment]: # (!!!ChangelogFooterDividerTag!!!)
 
-fddddhsjdkfh
