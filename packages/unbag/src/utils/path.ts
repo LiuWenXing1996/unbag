@@ -1,4 +1,3 @@
-import { FinalUserConfig } from "./config";
 import * as nodePath from "node:path";
 export type NodePathApi = typeof nodePath;
 

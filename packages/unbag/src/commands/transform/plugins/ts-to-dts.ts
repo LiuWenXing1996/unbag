@@ -106,11 +106,11 @@ export const TsToDtsTransformPlugin = (options?: {
 }) => {
   return defineTransformPlugin({
     name: "ts-to-dts",
-    match: (file) => {
+    match: async (file) => {
       const extname = path.extname(file.path);
       return supportExtensions.includes(extname);
     },
-    beforeTransform(input, finalUserConfig) {
+    beforeTransform: async (input, finalUserConfig) => {
       const tsCompilerOptionsFromFile =
         tryGetTsCompilerOptionsFromTsConfigJsonFile(options?.configFile);
       const compilerOptions = {

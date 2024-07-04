@@ -2,8 +2,6 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { createFsUtils } from "../../utils/fs";
 import { sleep } from "../../utils/common";
-import { ParallelCommand } from ".";
-import { v4 as uuidv4 } from "uuid";
 
 export interface WaitConfig {
   timeout: number;

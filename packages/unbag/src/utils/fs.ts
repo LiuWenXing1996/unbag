@@ -9,7 +9,7 @@ export type WriteFileData = Parameters<FsPromisesApi["writeFile"]>[1];
 export type WriteFileOptions = Parameters<FsPromisesApi["writeFile"]>[2];
 export type FsUtils = ReturnType<typeof createFsUtils> & FsPromisesApi;
 
-export const createFsUtils = (fs: Partial<FsPromisesApi>) => {
+export const createFsUtils = (fs: FsPromisesApi) => {
   const { $readFile, $readdir, $stat, $mkdir, $writeFile, $rm } = new Proxy(
     {} as {
       [key in keyof FsPromisesApi as `$${key}`]: () => FsPromisesApi[key];
@@ -177,6 +177,7 @@ export const createFsUtils = (fs: Partial<FsPromisesApi>) => {
   };
 
   return {
+    ...fs,
     readJson,
     modifyJson,
     remove,

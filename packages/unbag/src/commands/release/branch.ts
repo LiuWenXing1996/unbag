@@ -1,12 +1,7 @@
 import { type FinalUserConfig } from "../../utils/config";
-import { LogType, useLog } from "../../utils/log";
+import { useGit } from "../../utils/git";
+import { useLog } from "../../utils/log";
 import { message } from "../../utils/message";
-
-export const getGitBranch = async () => {
-  const { $ } = await import("execa");
-  const { stdout } = await $`git rev-parse --abbrev-ref HEAD`;
-  return stdout;
-};
 
 export interface ReleaseBranchConfig {
   mainName: string;
@@ -14,15 +9,9 @@ export interface ReleaseBranchConfig {
   cleanCheckDisable: boolean;
 }
 
-export type ReleaseBranchResult =
-  | {
-      checkPass: true;
-      currentBranchName: string;
-    }
-  | {
-      checkPass: false;
-      currentBranchName?: string;
-    };
+export type ReleaseBranchResult = {
+  currentBranchName: string;
+};
 
 export const ReleaseBranchConfigDefault: ReleaseBranchConfig = {
   mainName: "main",
@@ -39,49 +28,43 @@ export const branch = async ({
     release: {
       branch: { mainCheckDisable, mainName, cleanCheckDisable },
     },
-    git: { currentBranchGet, currentBranchStatusGet },
   } = config;
   const log = useLog({ config });
+  const { currentBranchGet, currentBranchStatusGet } = useGit();
   const currentBranchName = await currentBranchGet();
   if (!currentBranchName) {
-    await log({
-      type: LogType.error,
-      content: message.releaseCurrentBranchUndefined(),
-    });
-    return {
-      checkPass: false,
-    };
+    throw new Error(message.releaseCurrentBranchUndefined());
   }
-  await log({
-    type: LogType.message,
-    content: message.releaseCurrentBranchName({ currentBranchName }),
-  });
+  log.info(message.releaseCurrentBranchName({ currentBranchName }));
   if (!mainCheckDisable) {
+    log.info(message.releaseMainBranchChecking());
     if (currentBranchName !== mainName) {
-      await log({
-        type: LogType.error,
-        content: message.releaseMainBranchCheckFalse({
+      throw new Error(
+        message.releaseMainBranchCheckFail({
           currentBranchName,
           mainBranchName: mainName,
-        }),
-      });
-      return {
-        currentBranchName,
-        checkPass: false,
-      };
+        })
+      );
     }
+    log.info(message.releaseMainBranchCheckSuccess());
+  } else {
+    log.warn(message.releaseMainBranchCheckDisable());
   }
   if (!cleanCheckDisable) {
+    log.info(message.releaseBranchCleanChecking());
     const currentBranchStatus = await currentBranchStatusGet();
     if (currentBranchStatus) {
-      return {
-        currentBranchName,
-        checkPass: false,
-      };
+      throw new Error(
+        message.releaseBranchCleanCheckFail({
+          branchStatusInfo: currentBranchStatus,
+        })
+      );
     }
+    log.info(message.releaseBranchCleanCheckSuccess());
+  } else {
+    log.warn(message.releaseBranchCleanCheckDisable());
   }
   return {
     currentBranchName,
-    checkPass: true,
   };
 };

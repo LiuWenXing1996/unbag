@@ -1,21 +1,14 @@
 import {
   TransformPluginInputFile,
   TransformPluginTree,
-  TransformPluginTreeSchema,
   execTransformPluginTree,
 } from "./plugin";
 import path from "../../utils/path";
 import { createFsUtils } from "../../utils/fs";
 import * as fsPromises from "node:fs/promises";
-import { MaybePromise } from "../../utils/types";
 import { FinalUserConfig } from "../../utils/config";
 import { watch as fsWatch } from "chokidar";
 import debounce from "debounce-promise";
-import { z } from "zod";
-import {
-  defineZodFunctionWithDefault,
-  wrapperZodLazyResult,
-} from "../../utils/common";
 
 export interface TransformConfig {
   entry: string;
@@ -26,42 +19,27 @@ export interface TransformConfig {
   readFile: (filePath: string) => Promise<string | Buffer>;
 }
 
-export const TransformConfigSchema: z.ZodSchema<TransformConfig> = z.lazy(() =>
-  wrapperZodLazyResult(
-    z
-      .object({
-        entry: z.string().default("./src"),
-        watch: z.boolean().default(false),
-        sourcemap: z.boolean().default(false),
-        plugins: TransformPluginTreeSchema,
-        filterFile: defineZodFunctionWithDefault(
-          z.function().args(z.string()).returns(z.promise(z.boolean())),
-          async (filepath) => {
-            const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some(
-              (f) => filepath.endsWith(f)
-            );
-            return !needIgnore;
-          }
-        ),
-        readFile: defineZodFunctionWithDefault(
-          z
-            .function()
-            .args(z.string())
-            .returns(z.promise(z.union([z.string(), z.instanceof(Buffer)]))),
-          async (filepath) => {
-            const readToString = KNOWN_CODE_FILE_TYPES.filter((e) => e).some(
-              (f) => filepath.endsWith(f)
-            );
-            if (readToString) {
-              return await fsPromises.readFile(filepath, "utf-8");
-            }
-            return await fsPromises.readFile(filepath);
-          }
-        ),
-      })
-      .default({})
-  )
-);
+export const TransformConfigDefault: TransformConfig = {
+  entry: "./src",
+  watch: false,
+  sourcemap: false,
+  plugins: [],
+  filterFile: async (filepath) => {
+    const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
+      filepath.endsWith(f)
+    );
+    return !needIgnore;
+  },
+  readFile: async (filepath) => {
+    const readToString = KNOWN_CODE_FILE_TYPES.filter((e) => e).some((f) =>
+      filepath.endsWith(f)
+    );
+    if (readToString) {
+      return await fsPromises.readFile(filepath, "utf-8");
+    }
+    return await fsPromises.readFile(filepath);
+  },
+};
 
 export const KNOWN_EXCLUDE_FILE_TYPES = [".DS_Store"];
 export const KNOWN_CODE_FILE_TYPES = [

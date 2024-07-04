@@ -20,6 +20,18 @@ export function arraify<T>(target: T | T[]): T[] {
   return Array.isArray(target) ? target : [target];
 }
 
+export type Result<S, E = S> =
+  | {
+      success: true;
+      content: S;
+      message?: string;
+    }
+  | {
+      success: false;
+      content?: E;
+      message: string;
+    };
+
 export type SafeObj<T> = {
   [k in keyof T as `$${string & k}`]-?: () => T[k] extends object
     ? SafeObj<T[k]>
@@ -61,13 +73,6 @@ export const safeObj = <T extends object>(
 };
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-export const useExeca = async () => {
-  return await import("execa");
-};
-
-export const useChalk = async () => {
-  return await import("chalk");
-};
 
 export const wrapperZodLazyResult = <T extends z.ZodType>(zodType: T) => {
   return zodType as z.ZodSchema<z.output<typeof zodType>>;

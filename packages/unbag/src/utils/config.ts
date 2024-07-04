@@ -1,60 +1,35 @@
-import { ParallelConfig, parallelDefaultConfig } from "../commands/parallel";
-import { TransformConfig, transformDefaultConfig } from "../commands/transform";
+import { ParallelConfig, ParallelDefaultConfig } from "../commands/parallel";
+import { TransformConfig, TransformConfigDefault } from "../commands/transform";
 import { createFsUtils } from "./fs";
 import * as fsPromises from "node:fs/promises";
-import path, { PathConfig, PathConfigDefault } from "../utils/path";
+import { usePath } from "../utils/path";
 import { bundleRequire } from "bundle-require";
 import { ReleaseConfig, releaseDefaultConfig } from "../commands/release";
-import { arraify, isObject, safeObj, wrapperZodLazyResult } from "./common";
+import { arraify, isObject, safeObj } from "./common";
 import { message } from "./message";
 import { DeepPartial } from "./types";
-import { LogConfig, LogConfigSchema } from "./log";
-import { GitConfig, GitConfigDefault } from "./git";
-import { z } from "zod";
-import { defineConfigSchema } from "./schema";
+import { LogConfig, LogConfigDefault } from "./log";
 
 export interface FinalUserConfig {
   root: string;
-  // configFileResolvedPath?: string;
-  // git: GitConfig;
-  // path: PathConfig;
-  // tempDir: string;
+  configFileResolvedPath?: string;
+  tempDir: string;
   log: LogConfig;
-  // transform: TransformConfig;
-  // parallel: ParallelConfig;
-  // release: ReleaseConfig;
+  transform: TransformConfig;
+  parallel: ParallelConfig;
+  release: ReleaseConfig;
 }
 
-export const FinalUserConfigSchema: z.ZodSchema<FinalUserConfig> = z.lazy(() =>
-  wrapperZodLazyResult(
-    z
-      .object({
-        root: z.string().default("() => process.cwd()"),
-        log: LogConfigSchema.default(LogConfigSchema.parse({})),
-      })
-      .default({})
-  )
-);
-// defineConfigSchema<FinalUserConfig>(() => {
-//   return z
-//     .object({
-//       // root: z.string().default("() => process.cwd()"),
-//       log: LogConfigSchema,
-//     })
-//     .default({});
-// });
 export type UserConfig = DeepPartial<
   Omit<FinalUserConfig, "configFileResolvedPath" | "root">
 >;
 
 export const defaultConfig: FinalUserConfig = {
   root: process.cwd(),
-  git: GitConfigDefault,
-  path: PathConfigDefault,
   tempDir: "./node_modules/.unbag",
-  log: logDefaultConfig,
-  transform: transformDefaultConfig,
-  parallel: parallelDefaultConfig,
+  log: LogConfigDefault,
+  transform: TransformConfigDefault,
+  parallel: ParallelDefaultConfig,
   release: releaseDefaultConfig,
 };
 
@@ -65,6 +40,7 @@ export const resolveUserConfig = async (options: {
 }) => {
   const { filePath, root } = options;
   const fsUtils = createFsUtils(fsPromises);
+  const path = usePath();
 
   if (filePath) {
     const absoluteFilePath = path.isAbsolute(filePath)
@@ -158,10 +134,6 @@ export const mergeConfigRecursively = <
     merged[key] = value;
   }
   return merged;
-};
-
-export const checkUserConfig = () => {
-  // TODO:使用 zod 来校验用户设置
 };
 
 export const safeConfig = <T extends object>(

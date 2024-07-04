@@ -1,19 +1,64 @@
-import { ReleaseChangelogFileContent } from ".";
 import { FinalUserConfig } from "../../utils/config";
+import { useLog } from "../../utils/log";
+import { message } from "../../utils/message";
+import { MaybePromise } from "../../utils/types";
 import { BumpResult } from "./bump";
+import { ReleaseChangelogFileContent } from "./changelog";
+import { $ } from "execa";
 
 export interface TagData {
   bumpRes: BumpResult;
   changelogRes: ReleaseChangelogFileContent;
 }
 
-export const tag = async (config: FinalUserConfig, data: TagData) => {
+export interface ReleaseTagConfig {
+  prefix: string;
+  force?: boolean;
+  skip?: boolean;
+  messageFormat: (params: {
+    config: FinalUserConfig;
+    bumpRes: BumpResult;
+    changelogRes: ReleaseChangelogFileContent;
+  }) => MaybePromise<string>;
+}
+
+export const ReleaseTagConfigDefault: ReleaseTagConfig = {
+  prefix: "v",
+  messageFormat: ({ config, changelogRes, bumpRes }) => {
+    const { release } = config;
+    const { scope } = release;
+    return `release${scope ? `(${scope})` : ``}: ${bumpRes?.version}`;
+  },
+};
+
+export const tag = async ({
+  config,
+  changelogRes,
+  bumpRes,
+}: {
+  config: FinalUserConfig;
+  bumpRes: BumpResult;
+  changelogRes: ReleaseChangelogFileContent;
+}) => {
   const { release } = config;
-  const { tagPrefix, tagForce, tagMessageFormat } = release;
-  const { bumpRes } = data;
-  const { $ } = await import("execa");
-  const tagName = `${tagPrefix}${bumpRes.version}`;
-  const tagMessage = await tagMessageFormat(config, data);
-  await $`git tag -a ${tagName} ${tagForce ? ["-f"] : []} -m ${tagMessage}`;
+  const {
+    tag: { prefix, force, messageFormat, skip },
+  } = release;
+  const log = useLog({ config });
+  log.info(message.releaseTagging());
+  if (skip) {
+    log.info(message.releaseTagging());
+    return;
+  }
+  const tagName = `${prefix}${bumpRes.version}`;
+  const tagMessage = await messageFormat({ config, changelogRes, bumpRes });
+  await $`git tag -a ${tagName} ${force ? ["-f"] : []} -m ${tagMessage}`;
+  log.info(message.releaseTagAddSuccess({ tagMessage, tagName }));
+  
+
   // TODO:继续实现 tag
+  /**
+   * 添加 log
+   * 添加 自动的 git tag push ?
+   */
 };

@@ -9,9 +9,7 @@ import {
 } from "./wait";
 import concurrently from "concurrently";
 import { FinalUserConfig } from "../../utils/config";
-import path from "node:path";
-import fs from "node:fs/promises";
-import { createFsUtils } from "../../utils/fs";
+import { usePath } from "../../utils/path";
 
 export interface ParallelConfig {
   wait: WaitConfig;
@@ -20,7 +18,7 @@ export interface ParallelConfig {
   groups: Record<string, ParallelCommand[]>;
 }
 
-export const parallelDefaultConfig: ParallelConfig = {
+export const ParallelDefaultConfig: ParallelConfig = {
   wait: WaitDefaultConfig,
   commands: [],
   groups: {},
@@ -43,6 +41,7 @@ export const parallel = async (config: FinalUserConfig) => {
   const needWaitCmdMap = new Map<string, ParallelCommand | undefined>();
   const { parallel, root, tempDir } = config;
   const { commands, groupName, groups } = parallel;
+  const path = usePath();
   const parallelTempDir = path.resolve(root, tempDir, "parallel");
   const parallelWaitTempDir = path.resolve(parallelTempDir, "wait");
   const finalCommands = (groupName ? groups[groupName] : commands) || [];

@@ -6,7 +6,7 @@ export const TsToJsTransformPlugin = (options?: { format?: "cjs" | "esm" }) => {
   const { format } = options || {};
   return defineTransformPlugin({
     name: "ts-to-js",
-    match: (file) => {
+    match: async (file) => {
       if (path.extname(file.path) === ".ts") {
         return true;
       }

@@ -1,15 +1,13 @@
 import semver, { type ReleaseType } from "semver";
 import { message } from "../../utils/message";
-//@ts-ignore
 import type { Commit } from "conventional-commits-parser";
-//@ts-ignore
-import type { Bumper } from "conventional-recommended-bump";
-//@ts-ignore
 import type { BumperRecommendation } from "conventional-recommended-bump";
 import { FinalUserConfig } from "../../utils/config";
 import { MaybePromise } from "../../utils/types";
 import { usePath } from "../../utils/path";
 import { useFs } from "../../utils/fs";
+import { useLog } from "../../utils/log";
+import { Bumper } from "conventional-recommended-bump";
 
 export interface VersionFileFileContent {
   version: string;
@@ -28,6 +26,10 @@ export interface ReleaseBumpConfig {
     bumpRes: BumpResult;
   }) => MaybePromise<void>;
   versionFileWriteDisable?: boolean;
+  releaseAs?: string;
+  releaseType?: ReleaseType;
+  releasePre?: boolean;
+  releasePreTag?: string;
 }
 
 export const ReleaseBumpConfigDefault: ReleaseBumpConfig = {
@@ -105,16 +107,23 @@ export const isInPrerelease = (version: string) => {
   return Array.isArray(semver.prerelease(version));
 };
 
-export const genVersionByCommits = async (
-  config: FinalUserConfig,
+export const genVersionByCommits = async (params: {
+  config: FinalUserConfig;
   data: {
     oldVersion: string;
-  }
-): Promise<BumpResult> => {
-  const { release } = config;
-  const { scope, releasePre, releasePreTag, tagPrefix } = release;
+  };
+}): Promise<BumpResult> => {
+  const { config, data } = params;
+  const log = useLog({ config });
+  log.info(message.releaseBumpingByCommits());
+  const {
+    release: {
+      scope,
+      tag: { prefix: tagPrefix },
+      bump: { releasePre, releasePreTag },
+    },
+  } = config;
   const { oldVersion } = data;
-  const { Bumper } = await import("conventional-recommended-bump");
   const bumper = new Bumper();
   const presetPath = require.resolve(
     "conventional-changelog-conventionalcommits"
@@ -125,7 +134,9 @@ export const genVersionByCommits = async (
   if (scope) {
     commits = commits.filter((e) => e.scope === scope);
   }
+  log.info(message.releaseBumpCommitsList({ commits }));
   if (commits.length <= 0) {
+    log.warn(message.releaseBumpCommitsNoData({ oldVersion }));
     return {
       version: oldVersion,
       oldVersion,
@@ -142,9 +153,8 @@ export const genVersionByCommits = async (
   }
 
   if (!releaseType) {
-    throw new Error(message.releaseBumpGenUnValidReleaseType());
+    throw new Error(message.releaseBumpCommitsGenUnValidReleaseType());
   }
-
   if (releasePre) {
     if (isInPrerelease(oldVersion)) {
       releaseType = "prerelease";
@@ -153,8 +163,9 @@ export const genVersionByCommits = async (
     }
   }
   if (!isReleaseType(releaseType)) {
-    throw new Error(message.releaseBumpGenUnValidReleaseType());
+    throw new Error(message.releaseBumpCommitsGenUnValidReleaseType());
   }
+  log.info(message.releaseBumpCommitsGenReleaseTypeSuccess({ releaseType }));
   const version = semver.inc(oldVersion, releaseType, releasePreTag);
   if (!version) {
     throw new Error(message.releaseBumpGenUnValidVersion());
@@ -174,32 +185,29 @@ export interface BumpResult {
   commits?: Commit[];
 }
 
-export const useReleaseBump = ({ config }: { config: FinalUserConfig }) => {
+export const genVersion = async ({
+  config,
+}: {
+  config: FinalUserConfig;
+}): Promise<BumpResult> => {
+  const log = useLog({ config });
+  log.info(message.releaseBumping());
   const {
     release: {
-      bump: { versionFileRead },
+      bump: { versionFileRead, releaseAs, releaseType, releasePreTag },
     },
   } = config;
-  return async () => {
-    const versionFileContent = await versionFileRead({ config });
-    if (!versionFileContent) {
-      throw new Error(message.releaseBumpNotFoundPkgFile());
-    }
-  };
-};
-
-export const bump = async (config: FinalUserConfig): Promise<BumpResult> => {
-  const { release } = config;
-  const { readPkgFile, releaseAs, releaseType, releasePreTag } = release;
-  const pkgFileContent = await readPkgFile?.(config);
-  if (!pkgFileContent) {
-    throw new Error(message.releaseBumpNotFoundPkgFile());
+  const versionFileContent = await versionFileRead({ config });
+  if (!versionFileContent) {
+    throw new Error(message.releaseBumpNotFoundVersionFile());
   }
-  const oldVersion = pkgFileContent.version;
+  const oldVersion = versionFileContent.version;
+  log.info(message.releaseBumpOldVersion({ oldVersion }));
   if (releaseAs) {
     if (!semver.valid(releaseAs)) {
-      throw new Error(message.releaseBumpInputUnValidReleaseAs(releaseAs));
+      throw new Error(message.releaseBumpReleaseAsUnValid(releaseAs));
     }
+    log.info(message.releaseBumpOldVersion({ oldVersion }));
     return {
       version: releaseAs,
       oldVersion,
@@ -207,12 +215,13 @@ export const bump = async (config: FinalUserConfig): Promise<BumpResult> => {
   }
   if (releaseType) {
     if (!isReleaseType(releaseType)) {
-      throw new Error(message.releaseBumpInputUnValidReleaseType(releaseType));
+      throw new Error(message.releaseBumpReleaseTypeUnValid(releaseType));
     }
     const version = semver.inc(oldVersion, releaseType, releasePreTag);
     if (!version) {
       throw new Error(message.releaseBumpGenUnValidVersion());
     }
+    log.info(message.releaseBumpVersionByReleaseType({ releaseType, version }));
     return {
       version,
       oldVersion,
@@ -220,5 +229,30 @@ export const bump = async (config: FinalUserConfig): Promise<BumpResult> => {
     };
   }
 
-  return await genVersionByCommits(config, { oldVersion });
+  return await genVersionByCommits({ config, data: { oldVersion } });
+};
+
+export const bump = async ({
+  config,
+}: {
+  config: FinalUserConfig;
+}): Promise<BumpResult> => {
+  const versionResult = await genVersion({ config });
+  const {
+    release: {
+      bump: { versionFileWriteDisable, versionFileWrite },
+    },
+  } = config;
+  const log = useLog({ config });
+  if (!versionFileWriteDisable) {
+    await versionFileWrite({ config, bumpRes: versionResult });
+    log.info(
+      message.releaseBumpVersionFileWriteSuccess({
+        version: versionResult.version,
+      })
+    );
+  } else {
+    log.warn(message.releaseBumpVersionFileWriteDisable());
+  }
+  return versionResult;
 };
