@@ -14,7 +14,7 @@ export interface TagData {
 export interface ReleaseTagConfig {
   prefix: string;
   force?: boolean;
-  skip?: boolean;
+  disable?: boolean;
   messageFormat: (params: {
     config: FinalUserConfig;
     bumpRes: BumpResult;
@@ -42,19 +42,18 @@ export const tag = async ({
 }) => {
   const { release } = config;
   const {
-    tag: { prefix, force, messageFormat, skip },
+    tag: { prefix, force, messageFormat, disable },
   } = release;
   const log = useLog({ config });
   log.info(message.releaseTagging());
-  if (skip) {
-    log.info(message.releaseTagging());
+  if (disable) {
+    log.warn(message.releaseTagDisable());
     return;
   }
   const tagName = `${prefix}${bumpRes.version}`;
   const tagMessage = await messageFormat({ config, changelogRes, bumpRes });
   await $`git tag -a ${tagName} ${force ? ["-f"] : []} -m ${tagMessage}`;
   log.info(message.releaseTagAddSuccess({ tagMessage, tagName }));
-  
 
   // TODO:继续实现 tag
   /**

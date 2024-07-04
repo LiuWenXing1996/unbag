@@ -4,6 +4,18 @@ export const message = {
   userConfigFileNotFound: (filePath: string) => {
     return `没有找到配置文件: ${filePath}`;
   },
+  transformStarting: () => {
+    return `转换文件中...`;
+  },
+  transformWatchModeEnabled: () => {
+    return `观察模式已启动...`;
+  },
+  transformWatchFileChanged: () => {
+    return `检测到文件变化`;
+  },
+  transformEnd: () => {
+    return `转换完成`;
+  },
   releaseCurrentBranchUndefined: () => {
     return `现在没有处在任何分支,请切换到某分支下进行操作`;
   },
@@ -40,7 +52,7 @@ export const message = {
   }: {
     branchStatusInfo: string;
   }) => {
-    return `检测到有未提交的更改：\n ${branchStatusInfo},\n 请提交以上更改，保持git工作区的干净`;
+    return `检测到有未提交的更改：\n${branchStatusInfo},\n请提交以上更改，保持git工作区的干净`;
   },
   releaseBranchCleanCheckSuccess: () => {
     return `当前分支是干净的`;
@@ -121,6 +133,12 @@ export const message = {
   releaseCommitDisable: () => {
     return `自动提交更改文件已被禁用`;
   },
+  releaseCommitAll: () => {
+    return `将会自动提交所有更改文件`;
+  },
+  releaseCommitFileCollecting: () => {
+    return `正在自动收集更改文件...`;
+  },
   releaseCommitMessageInfoUndefined: () => {
     return `提交信息不能为空，请检查配置文件中的 release.commit.message,release.commit.messageFormat `;
   },
@@ -131,7 +149,7 @@ export const message = {
     return `未检测到需要提交的文件，退出自动提交`;
   },
   releaseCommitFilesInfo: ({ files }: { files: string[] }) => {
-    return `需要提交的文件: ${files.join("\n")}`;
+    return `需要提交的文件:\n   ${files.join("\n   ")}`;
   },
   releaseCommitSuccess: () => {
     return `自动提交成功`;
@@ -139,8 +157,8 @@ export const message = {
   releaseTagging: () => {
     return `准备添加 git tag ...`;
   },
-  releaseTagSkip: () => {
-    return `添加 git tag 已被跳过`;
+  releaseTagDisable: () => {
+    return `添加 git tag 已被禁用`;
   },
   releaseTagAddSuccess: ({
     tagName,

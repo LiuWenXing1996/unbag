@@ -9,6 +9,8 @@ import * as fsPromises from "node:fs/promises";
 import { FinalUserConfig } from "../../utils/config";
 import { watch as fsWatch } from "chokidar";
 import debounce from "debounce-promise";
+import { useLog } from "../../utils/log";
+import { message } from "../../utils/message";
 
 export interface TransformConfig {
   entry: string;
@@ -70,6 +72,8 @@ export const resolveTransformEntry = (config: FinalUserConfig) => {
 };
 
 export const innerTransform = async (config: FinalUserConfig) => {
+  const log = useLog({ config });
+  log.warn(message.transformStarting());
   const { root, transform } = config;
   const { filterFile, readFile, plugins, sourcemap } = transform;
   const entry = resolveTransformEntry(config);
@@ -116,21 +120,22 @@ export const innerTransform = async (config: FinalUserConfig) => {
     },
     finalUserConfig: { ...config },
   });
+  log.info(message.transformEnd());
 };
 
 export const watch = async (config: FinalUserConfig) => {
   const entry = resolveTransformEntry(config);
+  const log = useLog({ config });
   const watcher = fsWatch(entry);
   const debouncedTransform = debounce(async () => {
     await innerTransform(config);
   }, 100);
   await debouncedTransform();
   watcher.on("all", async (type, file) => {
-    console.log("检测到变化，正在重新转换文件...");
+    log.info(message.transformWatchFileChanged());
     await debouncedTransform();
-    console.log("文件转换完成");
   });
-  console.log("观察模式已启动");
+  log.info(message.transformWatchModeEnabled());
 };
 
 export const transform = async (config: FinalUserConfig) => {

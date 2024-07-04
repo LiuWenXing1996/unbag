@@ -34,5 +34,9 @@ export default defineUserConfig({
   },
   release: {
     scope: "unbag",
+    branch: {
+      mainCheckDisable: true,
+      cleanCheckDisable: true,
+    },
   },
 });

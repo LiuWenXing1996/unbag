@@ -9,11 +9,13 @@ import { $ } from "execa";
 export interface ReleaseCommitConfig {
   disable?: boolean;
   message?: string;
+  addAll: boolean;
   messageFormat: (params: {
     config: FinalUserConfig;
     bumpRes: BumpResult;
     changelogRes: ReleaseChangelogFileContent;
     commitFiles: string[];
+    addAll: boolean;
   }) => MaybePromise<string>;
   filesCollect: (params: {
     config: FinalUserConfig;
@@ -23,6 +25,7 @@ export interface ReleaseCommitConfig {
 }
 
 export const ReleaseCommitConfigDefault: ReleaseCommitConfig = {
+  addAll: true,
   messageFormat: async ({ config, bumpRes }) => {
     const { release } = config;
     const { scope } = release;
@@ -68,23 +71,35 @@ export const commit = async ({
   const { release } = config;
   const log = useLog({ config });
   const {
-    commit: { disable, message: commitMessage, messageFormat, filesCollect },
+    commit: {
+      disable,
+      message: commitMessage,
+      messageFormat,
+      filesCollect,
+      addAll,
+    },
   } = release;
   if (disable) {
     log.warn(message.releaseCommitDisable());
     return;
   }
   log.info(message.releaseCommitting());
-  const addFiles: string[] = await filesCollect({
-    config,
-    bumpRes,
-    changelogRes,
-  });
-  if (addFiles.length <= 0) {
-    log.warn(message.releaseCommitFilesEmpty());
-    return;
+  let addFiles: string[] = [];
+  if (addAll) {
+    log.info(message.releaseCommitAll());
+  } else {
+    log.info(message.releaseCommitFileCollecting());
+    addFiles = await filesCollect({
+      config,
+      bumpRes,
+      changelogRes,
+    });
+    if (addFiles.length <= 0) {
+      log.warn(message.releaseCommitFilesEmpty());
+      return;
+    }
+    log.info(message.releaseCommitFilesInfo({ files: [...addFiles] }));
   }
-  log.info(message.releaseCommitFilesInfo({ files: [...addFiles] }));
   const finalCommitMsg =
     commitMessage ||
     (await messageFormat({
@@ -92,12 +107,17 @@ export const commit = async ({
       bumpRes,
       changelogRes,
       commitFiles: { ...addFiles },
+      addAll,
     }));
   if (!finalCommitMsg) {
     throw new Error(message.releaseCommitMessageUndefined());
   }
   log.info(message.releaseCommitMessageInfo({ message: finalCommitMsg }));
-  await $`git add ${addFiles.join(" ")}`;
+  if (addAll) {
+    await $`git add .`;
+  } else {
+    await $`git add ${[...addFiles]}`;
+  }
   await $`git commit -m ${finalCommitMsg}`;
   log.info(message.releaseCommitSuccess());
 };

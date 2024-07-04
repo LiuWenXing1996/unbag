@@ -8,6 +8,7 @@ import { usePath } from "../../utils/path";
 import { useFs } from "../../utils/fs";
 import { useLog } from "../../utils/log";
 import { Bumper } from "conventional-recommended-bump";
+import { resolvePresetPath } from "./utils";
 
 export interface VersionFileFileContent {
   version: string;
@@ -125,9 +126,7 @@ export const genVersionByCommits = async (params: {
   } = config;
   const { oldVersion } = data;
   const bumper = new Bumper();
-  const presetPath = require.resolve(
-    "conventional-changelog-conventionalcommits"
-  );
+  const presetPath = resolvePresetPath();
   bumper.loadPreset(presetPath);
   bumper.tag({ prefix: tagPrefix });
   let commits = await getCommits(bumper);

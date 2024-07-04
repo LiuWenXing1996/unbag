@@ -1,5 +1,6 @@
 import { filterNullable } from "../../utils/common";
 import { FinalUserConfig } from "../../utils/config";
+import { useLog } from "../../utils/log";
 
 export interface TransformPluginInputFile {
   path: string;
@@ -93,6 +94,8 @@ export const execTransformPluginNode = async (
   const { inputFiles, writeFiles, finalUserConfig } = data;
   let currentOutputFiles: TransformPluginOutputFile[] = [];
   let currentIgnoreFiles: TransformPluginOutputFile[] = [];
+  const log = useLog({ config: finalUserConfig });
+  log.info(`正在处理插件${plugin.name}...`);
 
   await Promise.all(
     inputFiles.map(async (e) => {
