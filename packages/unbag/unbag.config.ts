@@ -5,7 +5,6 @@ import {
 } from "./src";
 
 export default defineUserConfig({
-  log: {},
   transform: {
     sourcemap: true,
     plugins: [
@@ -34,10 +33,6 @@ export default defineUserConfig({
     ],
   },
   release: {
-    tagPrefix: "unbag@",
     scope: "unbag",
-    disableWriteVersion: true,
-    changelogHeader: `fhsjdkfh`,
-    changelogFooter: `fddddhsjdkfh`,
   },
 });

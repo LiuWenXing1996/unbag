@@ -79,7 +79,7 @@ export async function loadUserConfigFromFile(absoluteFilePath: string): Promise<
 > {
   const { mod } = await bundleRequire({
     filepath: absoluteFilePath,
-    format: "cjs",
+    format: "esm",
   });
   const config = mod.default || mod;
   config.configFileResolvedPath = absoluteFilePath;
