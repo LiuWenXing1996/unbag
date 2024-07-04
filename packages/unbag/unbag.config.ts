@@ -38,5 +38,8 @@ export default defineUserConfig({
       mainCheckDisable: true,
       cleanCheckDisable: true,
     },
+    tag: {
+      disable: true,
+    },
   },
 });
