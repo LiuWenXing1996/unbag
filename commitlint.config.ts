@@ -35,6 +35,17 @@ const Configuration: UserConfig = {
       ];
     },
   },
+  prompt: {
+    questions: {
+      type: {
+        enum: {
+          release: {
+            description: "release sdfsd",
+          },
+        },
+      },
+    },
+  },
 };
 
 export default Configuration;

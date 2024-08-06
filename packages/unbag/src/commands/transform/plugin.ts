@@ -1,174 +1,257 @@
-import { filterNullable } from "../../utils/common";
-import { FinalUserConfig } from "../../utils/config";
-import { useLog } from "../../utils/log";
-
-export interface TransformPluginInputFile {
-  path: string;
-  content: string | Buffer;
-  sourcemap?: string;
+import { useFs } from "./../../utils/fs";
+import { filterNullable, useRoot } from "./../../utils/common";
+import { FinalUserConfig } from "./../../utils/config";
+import { useLog } from "./../../utils/log";
+import { DeepReadonly, MaybePromise } from "./../../utils/types";
+import _ from "lodash";
+import { AbsolutePath, RelativePath, usePath } from "./../../utils/path";
+export enum TransformPluginOutputFileType {
+  "Transformed" = "Transformed",
+  "Copy" = "Copy",
+  "Ignored" = "Ignored",
 }
-export interface TransformPluginOutputFile {
-  path: string;
-  content: string | Buffer;
-  sourcemap?: string;
+export type TransformPluginOutputFile = {
+  from: RelativePath;
+} & (
+  | {
+      type: TransformPluginOutputFileType.Transformed;
+      to: RelativePath;
+      content: string | Buffer;
+      sourcemap?: string;
+    }
+  | {
+      type: TransformPluginOutputFileType.Copy;
+      to: RelativePath;
+    }
+  | {
+      type: TransformPluginOutputFileType.Ignored;
+    }
+);
+export type ExecTransformPluginPaths = {
+  index: number;
+  name: string;
+}[];
+export enum TransformPluginType {
+  "All" = "All",
+  "Single" = "Single",
 }
-
 export type TransformPlugin = {
   name: string;
-  match: (
-    file: TransformPluginInputFile,
-    pluginConfig: TransformPluginTreeNodeConfig
-  ) => Promise<boolean>;
-  beforeTransform?: (
-    input: TransformPluginInputFile[],
-    finalUserConfig: FinalUserConfig,
-    pluginConfig?: TransformPluginTreeNodeConfig
-  ) => Promise<
-    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
-  >;
-  transform?: (
-    input: TransformPluginInputFile,
-    finalUserConfig: FinalUserConfig,
-    pluginConfig?: TransformPluginTreeNodeConfig
-  ) => Promise<
-    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
-  >;
-  afterTransform?: (
-    input: TransformPluginInputFile[],
-    finalUserConfig: FinalUserConfig,
-    pluginConfig?: TransformPluginTreeNodeConfig
-  ) => Promise<
-    TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
-  >;
+  transform: (params: {
+    inputDir: AbsolutePath;
+    filePaths: RelativePath[];
+    finalUserConfig: FinalUserConfig;
+  }) => Promise<(TransformPluginOutputFile | undefined)[]>;
+  // TODO:这个是不是可以去掉？
+  // match: (params: {
+  //   filePath: RelativePath;
+  //   inputDir: AbsolutePath;
+  // }) => Promise<boolean>;
 };
+// & (
+//   | {
+//       type: TransformPluginType.All;
+//       transform: (params: {
+//         inputDir: AbsolutePath;
+//         matchedFilePaths: RelativePath[];
+//         ignoredFilePaths: RelativePath[];
+//         finalUserConfig: FinalUserConfig;
+//       }) => Promise<
+//         TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
+//       >;
+//     }
+//   | {
+//       type: TransformPluginType.Single;
+//       transform: (params: {
+//         inputDir: AbsolutePath;
+//         matchedFilePaths: RelativePath[];
+//         ignoredFilePaths: RelativePath[];
+//         currentFilePath: RelativePath;
+//         finalUserConfig: FinalUserConfig;
+//       }) => Promise<
+//         TransformPluginOutputFile | TransformPluginOutputFile[] | undefined
+//       >;
+//     }
+// );
 
 export const defineTransformPlugin = (p: TransformPlugin) => p;
-
 export interface TransformPluginTreeNodeConfig {
   output?: string;
-  match?: (
-    file: TransformPluginInputFile,
-    pluginConfig?: TransformPluginTreeNodeConfig,
-    pluginMatch?: TransformPlugin["match"]
-  ) => Promise<boolean>;
+  extend?: (plugin: TransformPlugin) => MaybePromise<TransformPlugin>;
 }
-
-const toFileArray = (
-  res:
-    | TransformPluginOutputFile
-    | (TransformPluginOutputFile | undefined)[]
-    | undefined
-) => {
-  const tmpArray = [res].flat().flat();
-  return filterNullable(tmpArray);
-};
-const outputFileToInputFile = (
-  file: TransformPluginOutputFile
-): TransformPluginInputFile => file;
-
-const outputFileListToInputFileList = (list: TransformPluginOutputFile[]) =>
-  list.map((e) => outputFileToInputFile(e));
-
 export type TransformPluginTree = TransformPluginTreeNode[];
-
 export interface TransformPluginTreeNode {
+  config?: TransformPluginTreeNodeConfig;
   plugin: TransformPlugin;
   children?: TransformPluginTreeNode[];
-  config?: TransformPluginTreeNodeConfig;
 }
-
 export type TransformPluginWriteFileFunc = (
   files: TransformPluginOutputFile[],
   outputPath: string
 ) => Promise<void>;
-
-export const execTransformPluginNode = async (
-  node: TransformPluginTreeNode,
-  data: {
-    inputFiles: TransformPluginInputFile[];
-    writeFiles?: TransformPluginWriteFileFunc;
-    finalUserConfig: FinalUserConfig;
-  }
-) => {
+const genTransformPluginTempDir = (params: {
+  transformTempDir: AbsolutePath;
+  execTransformPluginPaths: ExecTransformPluginPaths;
+  currentTransformPlugin: {
+    index: number;
+    name: string;
+  };
+}) => {
+  const { transformTempDir, execTransformPluginPaths, currentTransformPlugin } =
+    params;
+  const relativeParentPath = execTransformPluginPaths
+    .map(({ index, name }) => `${index}-${name}/children`)
+    .join("/");
+  const path = usePath();
+  const absolutePath = path.resolve(
+    transformTempDir.content,
+    relativeParentPath,
+    `${currentTransformPlugin.index}-${currentTransformPlugin.name}/content`
+  );
+  return new AbsolutePath({
+    content: absolutePath,
+  });
+};
+export const execTransformPluginNode = async (params: {
+  node: DeepReadonly<TransformPluginTreeNode>;
+  index: number;
+  inputDir: AbsolutePath;
+  transformTempDir: AbsolutePath;
+  execTransformPluginPaths: ExecTransformPluginPaths;
+  finalUserConfig: FinalUserConfig;
+}) => {
+  const {
+    node,
+    finalUserConfig,
+    inputDir,
+    execTransformPluginPaths,
+    transformTempDir,
+    index,
+  } = params;
   const { plugin, children, config } = node;
-  const { inputFiles, writeFiles, finalUserConfig } = data;
-  let currentOutputFiles: TransformPluginOutputFile[] = [];
-  let currentIgnoreFiles: TransformPluginOutputFile[] = [];
-  const log = useLog({ config: finalUserConfig });
-  log.info(`正在处理插件${plugin.name}...`);
-
+  const fs = useFs();
+  const path = usePath();
+  const log = useLog({
+    finalUserConfig,
+  });
+  const startTime = Date.now();
+  log.info(`${startTime} 正在处理插件${plugin.name}...`);
+  const finalPlugin = config?.extend ? await config.extend(plugin) : plugin;
+  const inputFilePaths = (await fs.listFiles(inputDir.content))
+    .map((e) => {
+      return new AbsolutePath({
+        content: e,
+      });
+    })
+    .map((e) => {
+      return e.toRelativePath({
+        rel: inputDir,
+      });
+    });
+  const inputFilePathsFiltered = filterNullable(
+    await Promise.all(
+      inputFilePaths.map(async (filePath) => {
+        const matched = await finalUserConfig.transform.match({
+          filePath,
+          inputDir,
+          finalUserConfig,
+        });
+        if (matched) {
+          return filePath;
+        }
+      })
+    )
+  );
+  const tempOutDir = genTransformPluginTempDir({
+    execTransformPluginPaths,
+    transformTempDir,
+    currentTransformPlugin: {
+      index,
+      name: finalPlugin.name,
+    },
+  });
+  const outputFiles = filterNullable(
+    await plugin.transform({
+      finalUserConfig,
+      inputDir,
+      filePaths: [...inputFilePathsFiltered],
+    })
+  );
+  await fs.ensureDir(tempOutDir.content);
   await Promise.all(
-    inputFiles.map(async (e) => {
-      let matched = false;
-      if (config?.match) {
-        const match = config.match;
-        matched = await match(e, { ...config }, plugin.match);
-      } else {
-        matched = await plugin.match(e, { ...config });
+    outputFiles.map(async (file) => {
+      if (file.type === TransformPluginOutputFileType.Ignored) {
+        return;
       }
-      if (matched) {
-        currentOutputFiles.push(e);
-      } else {
-        currentIgnoreFiles.push(e);
+      if (file.type === TransformPluginOutputFileType.Copy) {
+        await fs.copy(
+          path.resolve(inputDir.content, file.from.content),
+          path.resolve(tempOutDir.content, file.to.content)
+        );
+      }
+      if (file.type === TransformPluginOutputFileType.Transformed) {
+        await fs.outputFile(
+          path.resolve(tempOutDir.content, file.to.content),
+          file.content
+        );
       }
     })
   );
-
-  if (plugin.beforeTransform) {
-    const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
-    currentOutputFiles = toFileArray(
-      await plugin.beforeTransform(currentInputFiles, finalUserConfig, config)
-    );
-  }
-  if (plugin.transform) {
-    const transform = plugin.transform;
-    const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
-    currentOutputFiles = toFileArray(
-      (
-        await Promise.all(
-          currentInputFiles.map(async (inputFile) => {
-            return await transform(inputFile, finalUserConfig, config);
-          })
-        )
-      ).flat()
-    );
-  }
-  if (plugin.afterTransform) {
-    const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
-    currentOutputFiles = toFileArray(
-      await plugin.afterTransform(currentInputFiles, finalUserConfig, config)
-    );
-  }
-  currentOutputFiles = [...currentOutputFiles, ...currentIgnoreFiles];
+  log.info(`${Date.now() - startTime} 处理插件完成${plugin.name}...`);
   if (config?.output) {
-    await writeFiles?.([...currentOutputFiles], config.output);
+    const rootPath = useRoot({ finalUserConfig });
+    const outputDir = rootPath.resolve({
+      next: config.output,
+    });
+    await fs.emptyDir(outputDir.content);
+    await fs.copy(tempOutDir.content, outputDir.content);
   }
   if (children && children.length > 0) {
-    const currentInputFiles = outputFileListToInputFileList(currentOutputFiles);
-    await Promise.all(
-      children.map(async (child) => {
-        return await execTransformPluginNode(child, {
-          inputFiles: currentInputFiles,
-          writeFiles,
-          finalUserConfig: finalUserConfig,
-        });
-      })
-    );
+    log.info(`处理插件子项${plugin.name}...`);
+    await execTransformPluginNodeChildren({
+      children,
+      inputDir: tempOutDir,
+      transformTempDir,
+      finalUserConfig,
+      execTransformPluginPaths: [
+        ...execTransformPluginPaths,
+        {
+          index,
+          name: plugin.name,
+        },
+      ],
+    });
   }
-  return currentOutputFiles;
+  return [...outputFiles];
 };
-
-export const execTransformPluginTree = async (
-  tree: TransformPluginTree,
-  data: {
-    inputFiles: TransformPluginInputFile[];
-    writeFiles?: TransformPluginWriteFileFunc;
-    finalUserConfig: FinalUserConfig;
-  }
-) => {
+export const execTransformPluginNodeChildren = async (params: {
+  children: DeepReadonly<TransformPluginTreeNode[]>;
+  inputDir: AbsolutePath;
+  transformTempDir: AbsolutePath;
+  execTransformPluginPaths: ExecTransformPluginPaths;
+  finalUserConfig: FinalUserConfig;
+}) => {
+  const { children, ...rest } = params;
   await Promise.all(
-    tree.map(async (treeNode) => {
-      return await execTransformPluginNode(treeNode, data);
+    children.map(async (treeNode, index) => {
+      return await execTransformPluginNode({
+        index,
+        node: treeNode,
+        ...rest,
+      });
     })
   );
+};
+export const execTransformPluginTree = async (params: {
+  tree: DeepReadonly<TransformPluginTree>;
+  inputDir: AbsolutePath;
+  transformTempDir: AbsolutePath;
+  finalUserConfig: FinalUserConfig;
+}) => {
+  const { tree, ...rest } = params;
+  await execTransformPluginNodeChildren({
+    children: tree,
+    execTransformPluginPaths: [],
+    ...rest,
+  });
 };

@@ -1,19 +1,9 @@
-import {
-  type ZodTypeAny,
-  type ZodUnion,
-  z,
-  ZodArray,
-  ZodString,
-  ZodFunction,
-  ZodTuple,
-  ZodType,
-  // ZodFunction,
+import { type ZodTypeAny, type ZodUnion, z, ZodArray, ZodString, ZodFunction, ZodTuple, ZodType
+// ZodFunction,
 } from "zod";
-
 export type ConfigSchemaUnionInput = [ZodTypeAny, ZodTypeAny, ...ZodTypeAny[]];
 export type ConfigSchemaInput = ZodTypeAny | ConfigSchemaUnionInput;
-export type TryUnion<T extends ConfigSchemaInput> =
-  T extends ConfigSchemaUnionInput ? ZodUnion<T> : T;
+export type TryUnion<T extends ConfigSchemaInput> = T extends ConfigSchemaUnionInput ? ZodUnion<T> : T;
 // type Test = TryUnion<[ZodString, ZodArray<ZodString>]>;
 
 // export const defineConfigSchema = <
@@ -31,24 +21,14 @@ export type TryUnion<T extends ConfigSchemaInput> =
 //   return [inputSchema, outputSchema];
 // };
 
-export const defineConfigSchema = <
-  T,
-  D extends z.ZodType<any, any, any> = z.ZodSchema<T>,
-  B extends z.ZodType<any, any, any> = z.ZodType<z.output<D>, any, any>
->(
-  func: () => B
-) => {
+export const defineConfigSchema = <T, D extends z.ZodType<any, any, any> = z.ZodSchema<T>, B extends z.ZodType<any, any, any> = z.ZodType<z.output<D>, any, any>>(func: () => B) => {
   return z.lazy(() => {
     const a = func();
     return a;
   });
 };
-
-const a = defineConfigSchema(() =>
-  z.object({
-    s: z.string().default("1").optional(),
-    // ss: z.string(),
-  })
-);
-
+const a = defineConfigSchema(() => z.object({
+  s: z.string().default("1").optional()
+  // ss: z.string(),
+}));
 type A = z.infer<typeof a>;

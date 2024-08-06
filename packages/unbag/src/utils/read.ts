@@ -10,11 +10,17 @@ import {
 import {
   resolveUserConfig,
   mergeDefaultConfig,
-  defaultConfig,
+  useDefaultConfig,
   mergeConfig,
+  UserConfigOptional,
+  deepFreezeConfig,
 } from "./config";
 import { release } from "../commands/release";
-
+import { commit } from "../commands/commit";
+import { AbsolutePath } from "./path";
+import path from "path-browserify";
+import _ from "lodash";
+import { Locale } from "./common";
 class CustomCommand extends Command {
   addOptions(options: Option[]) {
     for (const option of options) {
@@ -23,7 +29,6 @@ class CustomCommand extends Command {
     return this;
   }
 }
-
 const getCommonOptions = () => {
   const options: Option[] = [
     new Option("-c,--config <string>", "配置文件路径"),
@@ -31,17 +36,32 @@ const getCommonOptions = () => {
   ];
   return options;
 };
-
-const resolveCliUserConfig = async (options: any) => {
-  const { config = "", root } = options;
-  const userConfig = await resolveUserConfig({
-    root: root || defaultConfig.root,
-    filePath: config,
+const resolveCliUserConfig = async (options: {
+  config?: string;
+  root?: string;
+  locale?: Locale;
+  overrides?: UserConfigOptional;
+}) => {
+  const { config, root, overrides, locale } = options;
+  const defaultConfig = useDefaultConfig();
+  const absoluteRoot = new AbsolutePath({
+    content: path.resolve(root || defaultConfig.root),
   });
-  const mergedConfig = mergeDefaultConfig(userConfig);
-  return mergedConfig;
+  const userConfig = await resolveUserConfig({
+    root: absoluteRoot,
+    filePath: config,
+    locale: locale || defaultConfig.locale,
+  });
+  let mergedConfig = mergeDefaultConfig(userConfig);
+  mergedConfig = mergeConfig(mergedConfig, {
+    root: absoluteRoot.content,
+  });
+  mergedConfig = mergeConfig(mergedConfig, {
+    ...overrides,
+  });
+  const freezedConfig = deepFreezeConfig(mergedConfig);
+  return freezedConfig;
 };
-
 export const read = () => {
   const program = new CustomCommand();
   program.name("unbag").description("unbag CLI").version("0.8.0");
@@ -54,12 +74,12 @@ export const read = () => {
         .option("-w,--watch", "启用观察模式")
         .action(async (options) => {
           const cliUserConfig = await resolveCliUserConfig(options);
-          const finalConfig = mergeConfig(cliUserConfig, {
+          const finalUserConfig = mergeConfig(cliUserConfig, {
             transform: {
               watch: options.watch,
             },
           });
-          await transform(finalConfig);
+          await transform({ finalUserConfig });
         })
     )
     .addCommand(
@@ -114,6 +134,19 @@ export const read = () => {
           const cliUserConfig = await resolveCliUserConfig(options);
           const finalConfig = mergeConfig(cliUserConfig, {});
           await release(finalConfig);
+        })
+    )
+    .addCommand(
+      new CustomCommand()
+        .name("commit")
+        .description("commit")
+        .addOptions(getCommonOptions())
+        .action(async (options) => {
+          const cliUserConfig = await resolveCliUserConfig(options);
+          const finalConfig = mergeConfig(cliUserConfig, {});
+          await commit({
+            config: finalConfig,
+          });
         })
     );
   program.parse();

@@ -1,0 +1,25 @@
+{
+  "name": "unbag-commit-lint-config",
+  "version": "0.1.0",
+  "description": "unbag-commit-lint-config",
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "author": "LiuWenXing1996 lwx_redstone@163.com",
+  "keywords": [
+    "unbundle",
+    "bundleless",
+    "npm tool"
+  ],
+  "scripts": {
+    "build": "unbag transform",
+    "dev": "unbag transform -w"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "devDependencies": {
+    "unbag": "workspace:^"
+  }
+}

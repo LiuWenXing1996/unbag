@@ -1,18 +1,16 @@
 import { FinalUserConfig } from "../../utils/config";
 import { useFs } from "../../utils/fs";
-import { useLog } from "../../utils/log";
-import { message } from "../../utils/message";
+import { useLog } from "@/utils/log";
+import { useMessage } from "../../utils/message";
 import { usePath } from "../../utils/path";
 import { MaybePromise } from "../../utils/types";
 import { resolvePresetPath } from "./utils";
 import conventionalChangelog from "conventional-changelog";
-
 export interface ReleaseChangelogFileContent {
   header?: string;
   body?: string;
   footer?: string;
 }
-
 export interface ReleaseChangelogConfig {
   filePath: string;
   filePathResolve: (params: {
@@ -29,7 +27,6 @@ export interface ReleaseChangelogConfig {
   header?: string;
   footer?: string;
 }
-
 export const ReleaseChangelogConfigDefault: ReleaseChangelogConfig = {
   filePath: "CHANGELOG.md",
   filePathResolve: async ({ config }) => {
@@ -49,7 +46,9 @@ export const ReleaseChangelogConfigDefault: ReleaseChangelogConfig = {
         changelog: { filePathResolve },
       },
     } = config;
-    const changelogFileAbsolutePath = await filePathResolve({ config });
+    const changelogFileAbsolutePath = await filePathResolve({
+      config,
+    });
     const fs = useFs();
     const content = await fs.readFile(changelogFileAbsolutePath, "utf-8");
     return changelogContentParser(content);
@@ -60,13 +59,14 @@ export const ReleaseChangelogConfigDefault: ReleaseChangelogConfig = {
         changelog: { filePathResolve },
       },
     } = config;
-    const changelogFileAbsolutePath = await filePathResolve({ config });
+    const changelogFileAbsolutePath = await filePathResolve({
+      config,
+    });
     const fs = useFs();
     const changelogContent = changelogContentStringify(changelogRes);
     await fs.outputFile(changelogFileAbsolutePath, changelogContent);
   },
 };
-
 function streamToString(stream) {
   const chunks: any[] = [];
   return new Promise((resolve, reject) => {
@@ -75,12 +75,10 @@ function streamToString(stream) {
     stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
   });
 }
-
 const ChangelogHeaderDividerTag =
   "\n\n[comment]: # (!!!ChangelogHeaderDividerTag!!!)\n\n";
 const ChangelogFooterDividerTag =
   "\n\n[comment]: # (!!!ChangelogFooterDividerTag!!!)\n\n";
-
 export const changelogContentParser = (
   content: string
 ): ReleaseChangelogFileContent => {
@@ -100,7 +98,6 @@ export const changelogContentParser = (
   }
   return result;
 };
-
 export const changelogContentStringify = (
   content: ReleaseChangelogFileContent
 ) => {
@@ -114,9 +111,11 @@ export const changelogContentStringify = (
     (footer || "")
   );
 };
-
 export const changelog = async ({ config }: { config: FinalUserConfig }) => {
-  const log = useLog({ config });
+  const log = useLog({ finalUserConfig: config });
+  const message = useMessage({
+    locale: config.locale,
+  });
   log.info(message.releaseChangelogGenerating());
   const {
     release: {
@@ -131,7 +130,9 @@ export const changelog = async ({ config }: { config: FinalUserConfig }) => {
     tagPrefix,
   });
   const newChangeset = await streamToString(conventionalChangelogStream);
-  const oldContent = await fileRead({ config });
+  const oldContent = await fileRead({
+    config,
+  });
   const newContent: ReleaseChangelogFileContent = {
     header,
     footer,
@@ -139,7 +140,10 @@ export const changelog = async ({ config }: { config: FinalUserConfig }) => {
   };
   if (!fileWriteDisable) {
     log.info(message.releaseChangelogFileWriting());
-    await fileWrite({ config, changelogRes: newContent });
+    await fileWrite({
+      config,
+      changelogRes: newContent,
+    });
     log.info(message.releaseChangelogFileWriteSuccess());
   } else {
     log.warn(message.releaseChangelogFileWriteDisable());

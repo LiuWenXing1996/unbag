@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 async function start() {
-  const { read } = await import("../dist/babel/index.js");
+  const { read } = require("../dist/cjs/index.cjs");
   return read();
 }
 start();

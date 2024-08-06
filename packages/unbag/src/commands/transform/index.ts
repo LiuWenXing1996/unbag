@@ -1,147 +1,149 @@
-import {
-  TransformPluginInputFile,
-  TransformPluginTree,
-  execTransformPluginTree,
-} from "./plugin";
-import path from "../../utils/path";
-import { createFsUtils } from "../../utils/fs";
-import * as fsPromises from "node:fs/promises";
-import { FinalUserConfig } from "../../utils/config";
+import { TransformPluginTree, execTransformPluginTree } from "./plugin";
+import { FinalUserConfig } from "@/utils/config";
 import { watch as fsWatch } from "chokidar";
 import debounce from "debounce-promise";
-import { useLog } from "../../utils/log";
-import { message } from "../../utils/message";
+import { useLog } from "@/utils/log";
+import { useMessage } from "@/utils/message";
+import { AbsolutePath, RelativePath } from "@/utils/path";
+import { MaybePromise } from "@/utils/types";
+import { useFs } from "@/utils/fs";
+import {
+  useTransformEntry,
+  useTransformTaskTempDir,
+  useTransformTempDir,
+} from "./utils";
+import dayjs from "dayjs";
+import { TransformActionHelper, useTransformActionHelper } from "./action";
 
 export interface TransformConfig {
   entry: string;
   watch: boolean;
   sourcemap: boolean;
+  ignores: {
+    [extname: string]: boolean;
+  };
+  match: (params: {
+    filePath: RelativePath;
+    inputDir: AbsolutePath;
+    finalUserConfig: FinalUserConfig;
+  }) => MaybePromise<boolean>;
+  action: (params: {
+    helper: TransformActionHelper;
+    finalUserConfig: FinalUserConfig;
+  }) => Promise<void>;
   plugins: TransformPluginTree;
-  filterFile: (filePath: string) => Promise<boolean>;
-  readFile: (filePath: string) => Promise<string | Buffer>;
 }
+
+export type TransformTask = (params: {
+  inputDir: AbsolutePath;
+  tempDir: AbsolutePath;
+  filePaths: RelativePath[];
+  finalUserConfig: FinalUserConfig;
+}) => Promise<TransformTaskResult>;
+
+export type TransformProcess = (params: {
+  task: TransformTask;
+  name: string;
+}) => Promise<{
+  taskResult: TransformTaskResult;
+  tempDir: AbsolutePath;
+}>;
+export type TransformTaskOutFile = {
+  from: RelativePath;
+} & (
+  | {
+      type: TransformTaskOutFileType.Transformed;
+      to: RelativePath;
+      content: string | Buffer;
+      sourcemap?: string;
+    }
+  | {
+      type: TransformTaskOutFileType.Copy;
+      to: RelativePath;
+    }
+  | {
+      type: TransformTaskOutFileType.Ignored;
+    }
+);
+export enum TransformTaskOutFileType {
+  "Transformed" = "Transformed",
+  "Copy" = "Copy",
+  "Ignored" = "Ignored",
+}
+export type TransformTaskResult = (TransformTaskOutFile | undefined)[];
 
 export const TransformConfigDefault: TransformConfig = {
   entry: "./src",
   watch: false,
   sourcemap: false,
-  plugins: [],
-  filterFile: async (filepath) => {
-    const needIgnore = KNOWN_EXCLUDE_FILE_TYPES.filter((e) => e).some((f) =>
-      filepath.endsWith(f)
-    );
-    return !needIgnore;
+  ignores: {
+    ".DS_Store": true,
   },
-  readFile: async (filepath) => {
-    const readToString = KNOWN_CODE_FILE_TYPES.filter((e) => e).some((f) =>
-      filepath.endsWith(f)
+  action: async ({ finalUserConfig }) => {
+    const message = useMessage({
+      locale: finalUserConfig.locale,
+    });
+    throw new Error(message.transform.action.empty());
+  },
+  match: async ({ filePath, finalUserConfig }) => {
+    const {
+      transform: { ignores },
+    } = finalUserConfig;
+    const ignoresExtnames = Object.entries(ignores)
+      .filter(([, ignore]) => ignore)
+      .map(([extname]) => extname);
+    const needIgnore = ignoresExtnames.some((extName) =>
+      filePath.content.endsWith(extName)
     );
-    if (readToString) {
-      return await fsPromises.readFile(filepath, "utf-8");
+    if (needIgnore) {
+      return false;
     }
-    return await fsPromises.readFile(filepath);
+    return true;
   },
+  plugins: [],
 };
-
-export const KNOWN_EXCLUDE_FILE_TYPES = [".DS_Store"];
-export const KNOWN_CODE_FILE_TYPES = [
-  ".mjs",
-  ".js",
-  ".mts",
-  ".ts",
-  ".jsx",
-  ".tsx",
-  ".json",
-  ".css",
-  ".less",
-  ".sass",
-  ".scss",
-  ".styl",
-  ".stylus",
-  ".pcss",
-  ".postcss",
-  ".vue",
-  ".svg",
-];
-
-export const resolveTransformEntry = (config: FinalUserConfig) => {
-  const { root, transform } = config;
-  const { entry, sourcemap } = transform;
-  const finalEntry = path.isAbsolute(entry) ? entry : path.join(root, entry);
-  return finalEntry;
+const innerTransform = async (params: { finalUserConfig: FinalUserConfig }) => {
+  const { finalUserConfig } = params;
+  const log = useLog({ finalUserConfig });
+  const fs = useFs();
+  const message = useMessage({ locale: finalUserConfig.locale });
+  log.info(message.transform.starting());
+  const { transform } = finalUserConfig;
+  const { action } = transform;
+  const transformTempDir = useTransformTempDir({ finalUserConfig });
+  const actionHelper = useTransformActionHelper({ finalUserConfig });
+  await fs.emptyDir(transformTempDir.content);
+  await action({ helper: actionHelper, finalUserConfig });
+  log.info(message.transform.end());
 };
-
-export const innerTransform = async (config: FinalUserConfig) => {
-  const log = useLog({ config });
-  log.warn(message.transformStarting());
-  const { root, transform } = config;
-  const { filterFile, readFile, plugins, sourcemap } = transform;
-  const entry = resolveTransformEntry(config);
-  const fs = createFsUtils(fsPromises);
-  let entryFiles = await fs.listFiles(entry);
-  entryFiles = (
-    await Promise.all(
-      entryFiles.map(async (e) => {
-        const needIgnore = !(await filterFile(e));
-        if (needIgnore) {
-          return undefined;
-        }
-        return e;
-      })
-    )
-  ).filter((e) => e) as string[];
-  const inputFiles: TransformPluginInputFile[] = await Promise.all(
-    entryFiles.map(async (entryFilePath) => {
-      const content = await readFile(entryFilePath);
-      return {
-        path: path.relative(entry, entryFilePath),
-        content,
-      };
-    })
-  );
-  await execTransformPluginTree(plugins, {
-    inputFiles: [...inputFiles],
-    writeFiles: async (files, outputPath) => {
-      const absolutePath = path.isAbsolute(outputPath)
-        ? outputPath
-        : path.join(root, outputPath);
-      await fs.remove(absolutePath);
-      await Promise.all(
-        files.map(async (file) => {
-          const outputFilePath = path.join(absolutePath, file.path);
-          await fs.outputFile(outputFilePath, file.content);
-          if (sourcemap) {
-            if (file.sourcemap) {
-              await fs.outputFile(outputFilePath + ".map", file.sourcemap);
-            }
-          }
-        })
-      );
-    },
-    finalUserConfig: { ...config },
-  });
-  log.info(message.transformEnd());
-};
-
-export const watch = async (config: FinalUserConfig) => {
-  const entry = resolveTransformEntry(config);
-  const log = useLog({ config });
-  const watcher = fsWatch(entry);
+export const watch = async (params: { finalUserConfig: FinalUserConfig }) => {
+  const { finalUserConfig } = params;
+  const entryDir = useTransformEntry({ finalUserConfig });
+  const log = useLog({ finalUserConfig });
+  const message = useMessage({ locale: finalUserConfig.locale });
+  const watcher = fsWatch(entryDir.content);
   const debouncedTransform = debounce(async () => {
-    await innerTransform(config);
+    await innerTransform({ finalUserConfig });
   }, 100);
   await debouncedTransform();
   watcher.on("all", async (type, file) => {
-    log.info(message.transformWatchFileChanged());
+    log.info(
+      message.transform.watch.fileChanged({
+        type,
+        filePath: file,
+      })
+    );
     await debouncedTransform();
   });
-  log.info(message.transformWatchModeEnabled());
+  log.info(message.transform.watch.enabled());
 };
-
-export const transform = async (config: FinalUserConfig) => {
-  if (config.transform.watch) {
-    await watch(config);
+export const transform = async (params: {
+  finalUserConfig: FinalUserConfig;
+}) => {
+  const { finalUserConfig } = params;
+  if (finalUserConfig.transform.watch) {
+    await watch({ finalUserConfig });
   } else {
-    return innerTransform(config);
+    return await innerTransform({ finalUserConfig });
   }
 };

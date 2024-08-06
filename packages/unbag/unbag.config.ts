@@ -1,44 +1,77 @@
-import {
-  TsToDtsTransformPlugin,
-  TsToJsTransformPlugin,
-  defineUserConfig,
-} from "./src";
+import { defineUserConfig } from "./src";
 
 export default defineUserConfig({
   transform: {
     sourcemap: true,
-    plugins: [
-      {
-        config: {
-          output: "./dist/types",
+    action: async ({ helper }) => {
+      const { esbuild, alias, babel, out } = helper;
+      const aliasUid = await alias({
+        name: "alias",
+        options: {
+          paths: {
+            "@": "src",
+          },
         },
-        plugin: TsToDtsTransformPlugin(),
-      },
-      {
-        config: {
-          output: "./dist/esm",
+      });
+      const esbuildUid = await esbuild({
+        name: "esbuild",
+        options: {
+          esbuild: {
+            format: "esm",
+            loader: "ts",
+          },
+          extMapping: {
+            ".mts": ".js",
+            ".ts": ".js",
+            ".cts": ".js",
+          },
         },
-        plugin: TsToJsTransformPlugin({
-          format: "esm",
-        }),
-      },
-      {
-        config: {
-          output: "./dist/cjs",
+        parentUid: aliasUid,
+      });
+      const esmBabel = await babel({
+        name: "esm-babel",
+        options: {
+          babel: {
+            plugins: [
+              ["babel-plugin-add-import-extension", { extension: "mjs" }],
+            ],
+          },
+          extMapping: {
+            ".mjs": ".mjs",
+            ".js": ".mjs",
+            ".cjs": ".mjs",
+          },
         },
-        plugin: TsToJsTransformPlugin({
-          format: "cjs",
-        }),
-      },
-    ],
+        parentUid: esbuildUid,
+      });
+      const cjsBabel = await babel({
+        name: "cjs-babel",
+        options: {
+          babel: {
+            plugins: [
+              ["babel-plugin-add-import-extension", { extension: "cjs" }],
+              ["@babel/transform-modules-commonjs"],
+            ],
+          },
+          extMapping: {
+            ".mjs": ".cjs",
+            ".js": ".cjs",
+            ".cjs": ".cjs",
+          },
+        },
+        parentUid: esbuildUid,
+      });
+      await out({ processUid: esmBabel, output: "./dist/esm" });
+      await out({ processUid: cjsBabel, output: "./dist/cjs" });
+    },
   },
   release: {
     scope: "unbag",
     branch: {
       mainCheckDisable: true,
-      cleanCheckDisable: true,
     },
     tag: {
+      prefix: "unbag@",
       disable: true,
     },
   },

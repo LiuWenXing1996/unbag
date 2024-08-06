@@ -1,9 +1,12 @@
 import { z } from "zod";
-
+import { FinalUserConfig } from "./config";
+import { AbsolutePath, usePath } from "./path";
 export function isObject(value: unknown): value is Record<string, any> {
   return Object.prototype.toString.call(value) === "[object Object]";
 }
-
+export enum Locale {
+  "zh_cn" = "zh_cn",
+}
 export const filterNullable = <T>(
   list: T[],
   isNullable?: (value: T) => boolean
@@ -15,11 +18,9 @@ export const filterNullable = <T>(
     return !!e;
   }) as NonNullable<T>[];
 };
-
 export function arraify<T>(target: T | T[]): T[] {
   return Array.isArray(target) ? target : [target];
 }
-
 export type Result<S, E = S> =
   | {
       success: true;
@@ -31,13 +32,11 @@ export type Result<S, E = S> =
       content?: E;
       message: string;
     };
-
 export type SafeObj<T> = {
   [k in keyof T as `$${string & k}`]-?: () => T[k] extends object
     ? SafeObj<T[k]>
     : NonNullable<T[k]>;
 };
-
 export const safeObj = <T extends object>(
   obj: T,
   name: string,
@@ -71,20 +70,16 @@ export const safeObj = <T extends object>(
   });
   return p;
 };
-
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
 export const wrapperZodLazyResult = <T extends z.ZodType>(zodType: T) => {
   return zodType as z.ZodSchema<z.output<typeof zodType>>;
 };
-
 export const defineZodFunctionWithDefault = <
   Args extends z.ZodTuple<any, any>,
   Returns extends z.ZodTypeAny,
   ArgsTsType = z.infer<Args>
 >(
   zodFunction: z.ZodFunction<Args, Returns>,
-  // @ts-ignore
   defaultValue?: (...arg0: ArgsTsType) => z.infer<Returns>
 ) => {
   if (defaultValue) {
@@ -94,4 +89,11 @@ export const defineZodFunctionWithDefault = <
     });
   }
   return zodFunction;
+};
+export const useRoot = (params: { finalUserConfig: FinalUserConfig }) => {
+  const { finalUserConfig } = params;
+  const path = usePath();
+  return new AbsolutePath({
+    content: path.resolve(finalUserConfig.root),
+  });
 };

@@ -1,20 +1,51 @@
 import { type Commit } from "conventional-commits-parser";
-
 export const message = {
-  userConfigFileNotFound: (filePath: string) => {
-    return `没有找到配置文件: ${filePath}`;
+  config: {
+    file: {
+      notFound: (filePath: string) => {
+        return `没有找到配置文件: ${filePath}`;
+      },
+    },
   },
-  transformStarting: () => {
-    return `转换文件中...`;
-  },
-  transformWatchModeEnabled: () => {
-    return `观察模式已启动...`;
-  },
-  transformWatchFileChanged: () => {
-    return `检测到文件变化`;
-  },
-  transformEnd: () => {
-    return `转换完成`;
+  transform: {
+    starting: () => {
+      return `转换文件中...`;
+    },
+    action: {
+      empty: () => {
+        return `transform action 未定义`;
+      },
+      processParentNotFound: (params: { uid: string }) => {
+        const { uid } = params;
+        return `没有找到 uid 为 ${uid} 的 transform action process`;
+      },
+      taskProcessing: (params: { startTime: string; name: string }) => {
+        const { name, startTime } = params;
+        return `[${startTime}] 正在处理任务 ${name} ... `;
+      },
+      taskEnd: (params: { name: string; interval: number }) => {
+        const { name, interval } = params;
+        return `处理任务 ${name} 完成，耗时 ${interval} 秒 `;
+      },
+    },
+    plugin: {
+      processing: (params: { name: string }) => {
+        const { name } = params;
+        return `正在处理插件 ${name} ... `;
+      },
+    },
+    watch: {
+      enabled: () => {
+        return `观察模式已启动...`;
+      },
+      fileChanged: (params: { type: string; filePath: string }) => {
+        const { filePath, type } = params;
+        return `检测到文件变化: [${type}] ${filePath}`;
+      },
+    },
+    end: () => {
+      return `转换完成`;
+    },
   },
   releaseCurrentBranchUndefined: () => {
     return `现在没有处在任何分支,请切换到某分支下进行操作`;
@@ -169,7 +200,6 @@ export const message = {
   }) => {
     return `添加 git tag 成功, name: ${tagName}, message: ${tagMessage}`;
   },
-
   configPropertyUndefined: (keyPath: string, configFilePath?: string) => {
     if (!configFilePath) {
       return `配置中的 ${keyPath} 未定义`;
@@ -183,7 +213,6 @@ export const message = {
   releaseUndefinedPkgFilePathConfig: () => {
     return `pkgFilePath 为 undefined`;
   },
-
   releaseCommitMessageUndefined: () => {
     return `CommitMessage 为空，请检查 commitMessageFormat`;
   },
