@@ -18,7 +18,6 @@
   },
   "scripts": {
     "build": "tsx ./src/run.ts transform",
-    "_build": "tsx ./src/run.ts _transform",
     "dev": "tsx ./src/run.ts transform -w",
     "release": "tsx ./src/run.ts release",
     "commit": "tsx ./src/run.ts commit"
@@ -29,7 +28,9 @@
   "dependencies": {
     "@babel/core": "^7.24.7",
     "@babel/plugin-syntax-typescript": "^7.24.7",
+    "@commitlint/cz-commitlint": "^19.2.0",
     "@commitlint/load": "^19.2.0",
+    "@commitlint/types": "^19.0.3",
     "@types/deep-freeze": "^0.1.5",
     "@typescript/vfs": "^1.5.0",
     "babel-plugin-module-resolver": "^5.0.2",
@@ -52,6 +53,7 @@
     "esbuild": "^0.20.1",
     "execa": "^9.2.0",
     "fs-extra": "^11.2.0",
+    "inquirer": "^10.1.8",
     "lodash": "^4.17.21",
     "memfs": "^4.7.7",
     "path-browserify": "^1.0.1",
@@ -69,6 +71,7 @@
     "@types/debounce-promise": "^3.1.9",
     "@types/deep-freeze-strict": "^1.1.2",
     "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
     "@types/lodash": "^4.14.202",
     "@types/path-browserify": "^1.0.2",
     "@types/semver": "^7.5.8",

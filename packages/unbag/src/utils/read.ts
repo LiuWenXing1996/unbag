@@ -145,7 +145,7 @@ export const read = () => {
           const cliUserConfig = await resolveCliUserConfig(options);
           const finalConfig = mergeConfig(cliUserConfig, {});
           await commit({
-            config: finalConfig,
+            finalUserConfig: finalConfig,
           });
         })
     );

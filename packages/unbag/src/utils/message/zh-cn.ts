@@ -47,6 +47,15 @@ export const message = {
       return `转换完成`;
     },
   },
+  commit: {
+    branch: {
+      stageFiles: {
+        empty: () => {
+          return `没有检测到暂存的文件，请暂存文件后再试`;
+        },
+      },
+    },
+  },
   releaseCurrentBranchUndefined: () => {
     return `现在没有处在任何分支,请切换到某分支下进行操作`;
   },
