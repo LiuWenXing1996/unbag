@@ -5,19 +5,32 @@ import { getPrompter } from "./prompter";
 import { createRequire } from "node:module";
 import { usePath } from "@/utils/path";
 import { loadCommitLintConfig } from "./config";
-import { commit as czCommit } from "commitizen/dist/commitizen";
+// import { commit as czCommit } from "commitizen/dist/commitizen";
 import inquirer from "inquirer";
 import childProcess from "child_process";
 import { useLog } from "@/utils/log";
 const require = createRequire(import.meta.url);
 
+const useCommitizenCommit = async () => {
+  const path = usePath();
+  const commitizenPath = require.resolve("commitizen");
+  console.log({ commitizenPath });
+  const commitizenCommitJsFile = path.resolve(commitizenPath, "../commitizen");
+  const process = (await import(commitizenCommitJsFile)).default;
+  console.log({ process });
+  return process.commit;
+};
+
 export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
+  const czCommit = await useCommitizenCommit();
+  // throw "ss";
   const { finalUserConfig } = params;
   const path = usePath();
   const log = useLog({ finalUserConfig });
   const czCommitlintPath = require.resolve("@commitlint/cz-commitlint");
   const processJsFile = path.resolve(czCommitlintPath, "../lib/Process");
-  const process = await import(processJsFile);
+  const process = (await import(processJsFile)).default;
+  console.log({ process });
   const lintConfig = await loadCommitLintConfig({ finalUserConfig });
   const prompter = (inquirerIns, commit) => {
     process(lintConfig.rules, lintConfig.prompt, inquirerIns).then(commit);
@@ -27,25 +40,26 @@ export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
   const git = useGit();
   const gitRootPath = await git.gitRootPathGet();
   const stageFiles = await git.stageFilesGet();
-  console.log({ stageFiles });
+  console.log({ stageFiles, gitRootPath });
   if (stageFiles.length <= 0) {
     log.error(message.commit.branch.stageFiles.empty());
     return;
   }
+  // FIXME:husky lint error
 
-  //   czCommit(
-  //     inquirer,
-  //     gitRootPath,
-  //     prompter,
-  //     {
-  //       disableAppendPaths: true,
-  //       emitData: true,
-  //       quiet: false,
-  //     },
-  //     function (error) {
-  //       if (error) {
-  //         throw error;
-  //       }
-  //     }
-  //   );
+  czCommit(
+    inquirer,
+    gitRootPath,
+    prompter,
+    {
+      disableAppendPaths: true,
+      emitData: true,
+      quiet: false,
+    },
+    function (error) {
+      if (error) {
+        throw error;
+      }
+    }
+  );
 };

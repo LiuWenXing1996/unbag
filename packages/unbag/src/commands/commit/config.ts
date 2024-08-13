@@ -8,6 +8,7 @@ export interface CommitConfig {
 }
 export const CommitConfigDefault: CommitConfig = {
   lint: {
+    extends: ["@commitlint/config-conventional"],
     rules: {
       "type-enum": () => {
         return [
@@ -43,7 +44,6 @@ export const CommitConfigDefault: CommitConfig = {
     },
   },
 };
-
 export const loadCommitLintConfig = async (params: {
   finalUserConfig: FinalUserConfig;
 }) => {
@@ -63,7 +63,7 @@ export const loadCommitLintConfig = async (params: {
     });
 
   const tempLintConfigFile = {
-    path: commitTempDir.resolve({ next: "./temp-lint-config.js" }),
+    path: commitTempDir.resolve({ next: "./temp-lint-config.mjs" }),
     content: `
   export default {}
       `,
