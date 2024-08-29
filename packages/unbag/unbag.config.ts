@@ -4,7 +4,7 @@ export default defineUserConfig({
   transform: {
     sourcemap: true,
     action: async ({ helper }) => {
-      const { esbuild, alias, babel, out } = helper;
+      const { esbuild, alias, babel, out, dts } = helper;
       const aliasUid = await alias({
         name: "alias",
         options: {
@@ -61,6 +61,11 @@ export default defineUserConfig({
         },
         parentUid: esbuildUid,
       });
+      const dtsProcess = await dts({
+        name: "dts",
+        options: {},
+      });
+      await out({ processUid: dtsProcess, output: "./dist/types" });
       await out({ processUid: esmBabel, output: "./dist/esm" });
       await out({ processUid: cjsBabel, output: "./dist/cjs" });
     },

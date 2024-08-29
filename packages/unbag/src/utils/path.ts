@@ -82,7 +82,7 @@ export class AbsolutePath extends BasePath {
   constructor(params: { content: string }) {
     const { content } = params;
     if (!nodePath.isAbsolute(content)) {
-      throw new Error("RelativePath content must is absolute path");
+      throw new Error("AbsolutePath content must is absolute path");
     }
     super(params);
   }

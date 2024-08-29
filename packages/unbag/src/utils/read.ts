@@ -21,6 +21,7 @@ import { AbsolutePath } from "./path";
 import path from "path-browserify";
 import _ from "lodash";
 import { Locale } from "./common";
+import { commitlint } from "@/commands/commit/lint";
 class CustomCommand extends Command {
   addOptions(options: Option[]) {
     for (const option of options) {
@@ -42,6 +43,7 @@ const resolveCliUserConfig = async (options: {
   locale?: Locale;
   overrides?: UserConfigOptional;
 }) => {
+  debugger;
   const { config, root, overrides, locale } = options;
   const defaultConfig = useDefaultConfig();
   const absoluteRoot = new AbsolutePath({
@@ -146,6 +148,25 @@ export const read = () => {
           const finalConfig = mergeConfig(cliUserConfig, {});
           await commit({
             finalUserConfig: finalConfig,
+          });
+        })
+    )
+    .addCommand(
+      new CustomCommand()
+        .name("commitlint")
+        .description("commitlint")
+        .addOptions(getCommonOptions())
+        .option("-m,--message <string>", "信息")
+        .action(async (options) => {
+          console.log("commitlint");
+          const cliUserConfig = await resolveCliUserConfig(options);
+          console.log({ cliUserConfig });
+          const finalConfig = mergeConfig(cliUserConfig, {});
+          const { message } = options;
+          console.log({ message });
+          await commitlint({
+            finalUserConfig: finalConfig,
+            message,
           });
         })
     );

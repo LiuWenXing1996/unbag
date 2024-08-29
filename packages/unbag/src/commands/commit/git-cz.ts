@@ -7,7 +7,6 @@ import { usePath } from "@/utils/path";
 import { loadCommitLintConfig } from "./config";
 // import { commit as czCommit } from "commitizen/dist/commitizen";
 import inquirer from "inquirer";
-import childProcess from "child_process";
 import { useLog } from "@/utils/log";
 const require = createRequire(import.meta.url);
 
@@ -16,7 +15,9 @@ const useCommitizenCommit = async () => {
   const commitizenPath = require.resolve("commitizen");
   console.log({ commitizenPath });
   const commitizenCommitJsFile = path.resolve(commitizenPath, "../commitizen");
-  const process = (await import(commitizenCommitJsFile)).default;
+  const process = require(commitizenCommitJsFile);
+  // console.log({ aaa });
+  // const process = (await import(commitizenCommitJsFile)).default;
   console.log({ process });
   return process.commit;
 };
@@ -28,7 +29,7 @@ export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
   const path = usePath();
   const log = useLog({ finalUserConfig });
   const czCommitlintPath = require.resolve("@commitlint/cz-commitlint");
-  const processJsFile = path.resolve(czCommitlintPath, "../lib/Process");
+  const processJsFile = path.resolve(czCommitlintPath, "../lib/Process.js");
   const process = (await import(processJsFile)).default;
   console.log({ process });
   const lintConfig = await loadCommitLintConfig({ finalUserConfig });
@@ -46,6 +47,9 @@ export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
     return;
   }
   // FIXME:husky lint error
+  /**
+   * husky 的lint似乎需要保持父目录，子项目目录出现配置会出问题的
+   */
 
   czCommit(
     inquirer,

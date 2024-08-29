@@ -14,13 +14,12 @@
     "npm tool"
   ],
   "bin": {
-    "unbag": "bin/bin.js"
+    "unbag": "./dist/esm/cli.mjs"
   },
   "scripts": {
     "build": "tsx ./src/run.ts transform",
     "dev": "tsx ./src/run.ts transform -w",
-    "release": "tsx ./src/run.ts release",
-    "commit": "tsx ./src/run.ts commit"
+    "release": "tsx ./src/run.ts release"
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -29,7 +28,9 @@
     "@babel/core": "^7.24.7",
     "@babel/plugin-syntax-typescript": "^7.24.7",
     "@commitlint/cz-commitlint": "^19.2.0",
+    "@commitlint/lint": "^19.2.2",
     "@commitlint/load": "^19.2.0",
+    "@commitlint/read": "^19.4.0",
     "@commitlint/types": "^19.0.3",
     "@types/deep-freeze": "^0.1.5",
     "@typescript/vfs": "^1.5.0",

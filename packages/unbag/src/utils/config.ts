@@ -8,9 +8,9 @@ import { arraify, filterNullable, isObject, Locale, safeObj } from "./common";
 import { useMessage } from "./message";
 import { DeepPartial, DeepReadonly } from "./types";
 import { LogConfig, LogConfigDefault } from "./log";
-import { CommitConfig, CommitConfigDefault } from "../commands/commit";
 import deepFreezeStrict from "deep-freeze-strict";
 import _ from "lodash";
+import { CommitConfig, CommitConfigDefault } from "@/commands/commit/config";
 export type UserConfig = {
   root: string;
   locale: Locale;

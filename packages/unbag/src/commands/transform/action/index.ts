@@ -20,24 +20,28 @@ import {
 } from "./tasks/babel";
 import { useRoot } from "@/utils/common";
 import { DeepPartial } from "@/utils/types";
+import {
+  TransformActionTaskDts,
+  TransformActionTaskDtsOptions,
+} from "./tasks/dts";
 
-export type TransformActionTaskOutFile = {
-  from: RelativePath;
-} & (
+export type TransformActionTaskOutFile =
   | {
       type: TransformActionTaskOutFileType.Transformed;
+      from?: RelativePath;
       to: RelativePath;
       content: string | Buffer;
       sourcemap?: string;
     }
   | {
       type: TransformActionTaskOutFileType.Copy;
+      from: RelativePath;
       to: RelativePath;
     }
   | {
       type: TransformActionTaskOutFileType.Ignored;
-    }
-);
+      from: RelativePath;
+    };
 export enum TransformActionTaskOutFileType {
   "Transformed" = "Transformed",
   "Copy" = "Copy",
@@ -153,6 +157,18 @@ export const useTransformActionHelper = (params: {
       parentUid,
     });
   };
+  const dts = async (params: {
+    name: string;
+    options: DeepPartial<TransformActionTaskDtsOptions>;
+    parentUid?: TransformActionProcessUid;
+  }) => {
+    const { name, options, parentUid } = params;
+    return await custom({
+      name,
+      task: TransformActionTaskDts(options),
+      parentUid,
+    });
+  };
   const merge = async (params: {
     name: string;
     processUidList: TransformActionProcessUid[];
@@ -192,5 +208,6 @@ export const useTransformActionHelper = (params: {
     alias,
     babel,
     out,
+    dts,
   };
 };
