@@ -1,6 +1,6 @@
-import { defineConfig } from "unbag";
-
-export default defineConfig({
+import { defineUserConfig } from "unbag";
+// FIX?
+export default defineUserConfig({
   parallel: {
     commands: [
       {

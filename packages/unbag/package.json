@@ -21,9 +21,12 @@
     "dev": "tsx ./src/run.ts transform -w",
     "release": "tsx ./src/run.ts release"
   },
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
+  "main": "./dist/cjs/index.cjs",
   "types": "./dist/types/index.d.ts",
+  "exports": {
+    "import": "./dist/esm/index.mjs",
+    "require": "./dist/cjs/index.cjs"
+  },
   "dependencies": {
     "@babel/core": "^7.24.7",
     "@babel/plugin-syntax-typescript": "^7.24.7",
