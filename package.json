@@ -13,12 +13,11 @@
     "ci:publish": "pnpm build && changeset publish",
     "clear": "rimraf 'packages/*/{lib,node_modules}' && rimraf node_modules",
     "_commit": "cz",
-    "commit": "cz",
+    "commit": "unbag commit",
     "test": "echo 'test'",
     "prepare": "husky",
     "bump": "pnpm conventional-recommended-bump -p conventionalcommits",
-    "release": "pnpm commit-and-tag-version",
-    "sss": "pnpm commit"
+    "release": "pnpm commit-and-tag-version"
   },
   "license": "MIT",
   "author": "LiuWenXing1996 lwx_redstone@163.com",

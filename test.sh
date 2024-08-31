@@ -1,4 +1,5 @@
 #!/bin/bash
-echo "Hello World!"
-sss=`cat ./.git/COMMIT_EDITMSG`
-echo $sss
+echo "test sh"
+message="feat: test feat"
+echo $message
+pnpm unbag commitlint --message "$message"
