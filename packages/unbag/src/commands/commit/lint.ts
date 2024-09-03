@@ -12,5 +12,4 @@ export const commitlint = async (params: {
   if (!report.valid) {
     throw new Error("校验失败");
   }
-  console.log(report);
 };

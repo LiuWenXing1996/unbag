@@ -48,16 +48,11 @@ const resolveCliUserConfig = async (options: {
   const absoluteRoot = new AbsolutePath({
     content: path.resolve(root || defaultConfig.root),
   });
-  console.log("debugger");
-  console.log({
-    ss: absoluteRoot.content,
-  });
   const userConfig = await resolveUserConfig({
     root: absoluteRoot,
     filePath: config,
     locale: locale || defaultConfig.locale,
   });
-  console.log("resolveUserConfig");
   let mergedConfig = mergeDefaultConfig(userConfig);
   mergedConfig = mergeConfig(mergedConfig, {
     root: absoluteRoot.content,
@@ -66,7 +61,6 @@ const resolveCliUserConfig = async (options: {
     ...overrides,
   });
   const freezedConfig = deepFreezeConfig(mergedConfig);
-  console.log("deepFreezeConfig");
   return freezedConfig;
 };
 export const read = () => {
@@ -163,13 +157,9 @@ export const read = () => {
         .addOptions(getCommonOptions())
         .option("-m,--message <string>", "信息")
         .action(async (options) => {
-          console.log("commitlint");
-          console.log({ options });
           const cliUserConfig = await resolveCliUserConfig(options);
-          console.log({ cliUserConfig });
           const finalConfig = mergeConfig(cliUserConfig, {});
           const { message } = options;
-          console.log({ message });
           await commitlint({
             finalUserConfig: finalConfig,
             message,

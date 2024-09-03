@@ -8,7 +8,6 @@ const require = createRequire(import.meta.url);
 const commitlintConfigConventionalPath = require.resolve(
   "@commitlint/config-conventional"
 );
-console.log({ commitlintConfigConventionalPath });
 export interface CommitConfig {
   lint: UserConfig;
 }

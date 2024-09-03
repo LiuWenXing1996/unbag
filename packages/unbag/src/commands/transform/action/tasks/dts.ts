@@ -1,6 +1,3 @@
-// TODO:实现转换 d.ts
-// TODO:然后测试 父目录下的 commit lint
-
 import ts from "typescript";
 import {
   defineTransformActionTask,
@@ -10,9 +7,10 @@ import {
 import { FinalUserConfig, mergeConfig } from "@/utils/config";
 import { useRoot } from "@/utils/common";
 import _ from "lodash";
-import { AbsolutePath, RelativePath, usePath } from "@/utils/path";
+import { RelativePath, usePath } from "@/utils/path";
 import { useTransformTempDir } from "../../utils";
 import { DeepPartial } from "@/utils/types";
+import { useLog } from "@/utils/log";
 
 export interface TransformActionTaskDtsOptions {
   supportExtensions: Record<string, boolean>;
@@ -92,6 +90,7 @@ export const TransformActionTaskDts = (
       taskOptions: finalOptions,
     });
     const path = usePath();
+    const log = useLog({ finalUserConfig });
     const outDir = transformTempDir.resolve({
       next: "./transform-action-task-dts",
     });
@@ -134,13 +133,13 @@ export const TransformActionTaskDts = (
             diagnostic.messageText,
             "\n"
           );
-          console.log(
+          log.error(
             `${diagnostic.file.fileName} (${line + 1},${
               character + 1
             }): ${message}`
           );
         } else {
-          console.log(
+          log.error(
             ts.flattenDiagnosticMessageText(diagnostic.messageText, "\n")
           );
         }

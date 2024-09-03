@@ -99,13 +99,10 @@ export async function loadUserConfigFromFile(
     })
   | undefined
 > {
-  console.log("loadUserConfigFromFile");
-  console.log(absoluteFilePath.content);
   const { mod } = await bundleRequire({
     filepath: absoluteFilePath.content,
     format: "esm",
   });
-  console.log("bundleRequire finns");
   const config = mod.default || mod;
   config.configFileResolvedPath = absoluteFilePath;
   return config;
