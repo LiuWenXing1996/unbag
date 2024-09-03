@@ -18,7 +18,7 @@ import {
 import { release } from "../commands/release";
 import { commit } from "../commands/commit";
 import { AbsolutePath } from "./path";
-import path from "path-browserify";
+import path from "node:path";
 import _ from "lodash";
 import { Locale } from "./common";
 import { commitlint } from "@/commands/commit/lint";

@@ -1,6 +1,5 @@
 import path from "node:path";
-import fs from "node:fs/promises";
-import { createFsUtils } from "../../utils/fs";
+import { useFs } from "@/utils/fs";
 import { sleep } from "../../utils/common";
 export interface WaitConfig {
   timeout: number;
@@ -8,7 +7,7 @@ export interface WaitConfig {
 }
 export const WaitDefaultConfig: WaitConfig = {
   timeout: 10000,
-  interval: 500
+  interval: 500,
 };
 export interface WaitResFileContent {
   lastUpdateTime?: number;
@@ -24,10 +23,7 @@ export const genWaitResAbsoluteFilePath = (params: {
   absoluteTempDir: string;
   tag: string;
 }) => {
-  const {
-    absoluteTempDir,
-    tag
-  } = params;
+  const { absoluteTempDir, tag } = params;
   const absoluteFilePath = path.resolve(absoluteTempDir, `${tag}.json`);
   return absoluteFilePath;
 };
@@ -36,17 +32,13 @@ export const writeWaitResFile = async (params: {
   content?: WaitResFileContent;
   merge?: boolean;
 }) => {
-  const fsUtils = createFsUtils(fs);
-  const {
-    absoluteFilePath,
-    content,
-    merge
-  } = params;
-  await fsUtils.modifyJson<WaitResFileContent>(absoluteFilePath, oldJson => {
+  const fs = useFs();
+  const { absoluteFilePath, content, merge } = params;
+  await fs.modifyJson<WaitResFileContent>(absoluteFilePath, (oldJson) => {
     if (merge) {
       return {
         ...oldJson,
-        ...content
+        ...content,
       };
     } else {
       return content;
@@ -54,9 +46,9 @@ export const writeWaitResFile = async (params: {
   });
 };
 export const readWaitResFile = async (absoluteFilePath: string) => {
-  const fsUtils = createFsUtils(fs);
+  const fs = useFs();
   try {
-    return fsUtils.readJson<WaitResFileContent>(absoluteFilePath);
+    return fs.readJson<WaitResFileContent>(absoluteFilePath);
   } catch (error) {}
 };
 export const WaitCmdName = "parallel-wait";
@@ -69,10 +61,7 @@ export const checkWaitFile = async (params: {
   absoluteFilePath: string;
 }): Promise<CheckWaitFileResult> => {
   const startTime = Date.now();
-  const {
-    absoluteFilePath,
-    name
-  } = params;
+  const { absoluteFilePath, name } = params;
   const check = async (): Promise<CheckWaitFileResult> => {
     const thisCheckTime = Date.now();
     const currentContent = await readWaitResFile(absoluteFilePath);
@@ -83,18 +72,18 @@ export const checkWaitFile = async (params: {
       absoluteFilePath,
       merge: true,
       content: {
-        lastCheckTime: thisCheckTime
-      }
+        lastCheckTime: thisCheckTime,
+      },
     });
     const {
       timeout = WaitDefaultConfig.timeout,
       interval = WaitDefaultConfig.interval,
-      finish
+      finish,
     } = currentContent;
     if (finish) {
       return {
         checkTime: thisCheckTime,
-        content: currentContent
+        content: currentContent,
       };
     }
     const timeSpan = thisCheckTime - startTime;
@@ -103,21 +92,21 @@ export const checkWaitFile = async (params: {
       const timeoutContent: WaitResFileContent = {
         finish: true,
         result: false,
-        message: "timeout"
+        message: "timeout",
       };
       await writeWaitResFile({
         absoluteFilePath,
         merge: true,
         content: {
-          ...timeoutContent
-        }
+          ...timeoutContent,
+        },
       });
       return {
         checkTime: thisCheckTime,
         content: {
           ...currentContent,
-          ...timeoutContent
-        }
+          ...timeoutContent,
+        },
       };
     }
     console.log(`${name} wait ...`);
@@ -161,14 +150,8 @@ export const checkWaitFile = async (params: {
 //   await tryGetRes();
 //   return content === SUCCESS;
 // };
-export const genWaitCommand = (params: {
-  name: string;
-  tag: string;
-}) => {
-  const {
-    tag,
-    name
-  } = params || {};
+export const genWaitCommand = (params: { name: string; tag: string }) => {
+  const { tag, name } = params || {};
   let cmd = `unbag ${WaitCmdName} -n ${name} -tg ${tag}`;
   return cmd;
 };

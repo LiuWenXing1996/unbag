@@ -54,14 +54,14 @@ export const resolveUserConfig = async (options: {
   | undefined
 > => {
   const { filePath, root, locale } = options;
-  const fsUtils = useFs();
+  const fs = useFs();
   const path = usePath();
   const message = useMessage({
     locale,
   });
   if (filePath) {
     const absoluteFilePath = path.resolve(root.content, filePath);
-    const isExit = await fsUtils.exists(absoluteFilePath);
+    const isExit = await fs.pathExists(absoluteFilePath);
     if (!isExit) {
       throw new Error(message.config.file.notFound(absoluteFilePath));
     }
@@ -79,7 +79,7 @@ export const resolveUserConfig = async (options: {
     ];
     for (const filePath of configFileDefaultList) {
       const absoluteFilePath = path.resolve(root.content, filePath);
-      const isExit = await fsUtils.exists(absoluteFilePath);
+      const isExit = await fs.pathExists(absoluteFilePath);
       if (!isExit) {
         break;
       }

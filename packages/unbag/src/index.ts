@@ -1,5 +1,4 @@
 export { read } from "./utils/read";
-export { defineTransformPlugin } from "./commands/transform/plugin";
 export { defineUserConfig } from "./utils/config";
 // export { defineUserConfig } from "./utils/user-config";
 
@@ -7,4 +6,3 @@ export { defineUserConfig } from "./utils/config";
 
 // export types
 
-export { type TransformPlugin } from "./commands/transform/plugin";

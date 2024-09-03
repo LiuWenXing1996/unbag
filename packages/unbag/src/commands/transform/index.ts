@@ -1,4 +1,3 @@
-import { TransformPluginTree, execTransformPluginTree } from "./plugin";
 import { FinalUserConfig } from "@/utils/config";
 import { watch as fsWatch } from "chokidar";
 import debounce from "debounce-promise";
@@ -39,7 +38,6 @@ export interface TransformConfig {
     helper: TransformActionHelper;
     finalUserConfig: FinalUserConfig;
   }) => Promise<void>;
-  plugins: TransformPluginTree;
 }
 
 export type TransformTask = (params: {
@@ -109,7 +107,6 @@ export const TransformConfigDefault: TransformConfig = {
     }
     return true;
   },
-  plugins: [],
 };
 const innerTransform = async (params: { finalUserConfig: FinalUserConfig }) => {
   const { finalUserConfig } = params;

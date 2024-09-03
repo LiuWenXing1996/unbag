@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { FinalUserConfig } from "./config";
 import { AbsolutePath, usePath } from "./path";
 export function isObject(value: unknown): value is Record<string, any> {
@@ -71,9 +70,7 @@ export const safeObj = <T extends object>(
   return p;
 };
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-export const wrapperZodLazyResult = <T extends z.ZodType>(zodType: T) => {
-  return zodType as z.ZodSchema<z.output<typeof zodType>>;
-};
+
 export const useRoot = (params: { finalUserConfig: FinalUserConfig }) => {
   const { finalUserConfig } = params;
   const path = usePath();
