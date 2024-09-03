@@ -146,6 +146,7 @@ export const TransformActionTaskDts = (
         }
       });
     }
+    // TODO:如果dts files 为空，检查下   noEmitOnError 是不是为 true,如果是 true 的话，就提示下
     const result: TransformActionTaskResult = dtsFiles.map((dtsFile) => {
       return {
         type: TransformActionTaskOutFileType.Transformed,

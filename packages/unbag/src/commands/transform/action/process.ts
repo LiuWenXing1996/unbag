@@ -7,6 +7,10 @@ import { useTransformTempDir } from "../utils";
 import dayjs from "dayjs";
 import { useFs } from "@/utils/fs";
 
+export type TransformProcessTask = (params: {
+  tempDir: AbsolutePath;
+}) => Promise<void>;
+
 export class TransformActionProcessUid {
   #content: string;
   constructor() {
@@ -27,18 +31,21 @@ export const useTransformActionProcessMap = (params: {
   const processMap = new Map<
     TransformActionProcessUid,
     {
+      name: string;
       tempDir: AbsolutePath;
     }
   >();
-  const getProcessTempDir = (params: { uid: TransformActionProcessUid }) => {
+  const getProcess = (params: { uid: TransformActionProcessUid }) => {
     const { uid } = params;
-    const processResult = processMap.get(uid);
-    if (!processResult) {
+    const process = processMap.get(uid);
+    if (!process) {
       throw new Error(
         message.transform.action.processParentNotFound({ uid: uid.content })
       );
     }
-    return processResult.tempDir;
+    return {
+      ...process,
+    };
   };
   const createProcess = async (params: {
     task: (params: { tempDir: AbsolutePath }) => Promise<void>;
@@ -50,10 +57,12 @@ export const useTransformActionProcessMap = (params: {
     const uid = new TransformActionProcessUid();
     const fileName = name.replaceAll("/", "@");
     const tempDir = transformTempDir.resolve({
-      next: `./${fileName}`,
+      next: `./${fileName}-${uid.content}`,
     });
-    processMap.set(uid, { tempDir });
-    await fs.ensureDir(tempDir.content);
+    processMap.set(uid, {
+      tempDir,
+      name,
+    });
     const startTime = Date.now();
     log.info(
       message.transform.action.taskProcessing({
@@ -61,13 +70,35 @@ export const useTransformActionProcessMap = (params: {
         startTime: dayjs(startTime).format("HH:mm:ss"),
       })
     );
-    await task({ tempDir });
-    const interval = Number(((Date.now() - startTime) / 1000).toFixed(2));
-    log.info(message.transform.action.taskEnd({ name, interval }));
+    await fs.ensureDir(tempDir.content);
+    try {
+      await task({ tempDir });
+      const endTime = Date.now();
+      const interval = Number(((endTime - startTime) / 1000).toFixed(2));
+      log.info(
+        message.transform.action.taskEnd({
+          name,
+          interval,
+          endTime: dayjs(endTime).format("HH:mm:ss"),
+        })
+      );
+    } catch (error) {
+      const endTime = Date.now();
+      const interval = Number(((endTime - startTime) / 1000).toFixed(2));
+      log.info(
+        message.transform.action.taskFail({
+          name,
+          interval,
+          endTime: dayjs(endTime).format("HH:mm:ss"),
+        })
+      );
+      log.error(error);
+    }
+
     return uid;
   };
   return {
     createProcess,
-    getProcessTempDir,
+    getProcess,
   };
 };

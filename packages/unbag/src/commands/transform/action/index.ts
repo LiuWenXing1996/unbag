@@ -69,7 +69,7 @@ export const useTransformActionHelper = (params: {
   const entryDir = useTransformEntry({ finalUserConfig });
   const fs = useFs();
   const path = usePath();
-  const { createProcess, getProcessTempDir } = useTransformActionProcessMap({
+  const { createProcess, getProcess } = useTransformActionProcessMap({
     finalUserConfig,
   });
   const custom = async (params: {
@@ -82,7 +82,7 @@ export const useTransformActionHelper = (params: {
       name,
       task: async ({ tempDir }) => {
         const inputDir = parentUid
-          ? getProcessTempDir({ uid: parentUid })
+          ? getProcess({ uid: parentUid }).tempDir
           : entryDir;
         const filePaths = await useTransformFiles({
           finalUserConfig,
@@ -177,8 +177,8 @@ export const useTransformActionHelper = (params: {
     const uid = await createProcess({
       name,
       task: async ({ tempDir }) => {
-        const inputDirList = processUidList.map((uid) =>
-          getProcessTempDir({ uid })
+        const inputDirList = processUidList.map(
+          (uid) => getProcess({ uid }).tempDir
         );
         for (const inputDir of inputDirList) {
           await fs.copy(inputDir.content, tempDir.content);
@@ -192,14 +192,21 @@ export const useTransformActionHelper = (params: {
     processUid: TransformActionProcessUid;
   }) => {
     const { output, processUid } = params;
+    const parentProcess = getProcess({ uid: processUid });
     // TODO:check output valid
-    const tempDir = getProcessTempDir({ uid: processUid });
     const rootPath = useRoot({ finalUserConfig });
     const outputDir = rootPath.resolve({
       next: output,
     });
-    await fs.emptyDir(outputDir.content);
-    await fs.copy(tempDir.content, outputDir.content);
+    const name = `out-${parentProcess.name}`;
+    const uid = await createProcess({
+      name,
+      task: async () => {
+        await fs.emptyDir(outputDir.content);
+        await fs.copy(parentProcess.tempDir.content, outputDir.content);
+      },
+    });
+    return uid;
   };
   return {
     custom,

@@ -64,6 +64,7 @@ export default defineUserConfig({
       const dtsProcess = await dts({
         name: "dts",
         options: {},
+        parentUid: aliasUid,
       });
       await out({ processUid: dtsProcess, output: "./dist/types" });
       await out({ processUid: esmBabel, output: "./dist/esm" });

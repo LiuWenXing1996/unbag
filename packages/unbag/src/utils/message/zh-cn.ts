@@ -23,9 +23,21 @@ export const message = {
         const { name, startTime } = params;
         return `[${startTime}] 正在处理任务 ${name} ... `;
       },
-      taskEnd: (params: { name: string; interval: number }) => {
-        const { name, interval } = params;
-        return `处理任务 ${name} 完成，耗时 ${interval} 秒 `;
+      taskEnd: (params: {
+        name: string;
+        interval: number;
+        endTime: string;
+      }) => {
+        const { name, interval, endTime } = params;
+        return `[${endTime}] 处理任务 ${name} 完成，耗时 ${interval} 秒 `;
+      },
+      taskFail: (params: {
+        name: string;
+        interval: number;
+        endTime: string;
+      }) => {
+        const { name, interval, endTime } = params;
+        return `[${endTime}] 处理任务 ${name} 失败，耗时 ${interval} 秒 `;
       },
     },
     plugin: {

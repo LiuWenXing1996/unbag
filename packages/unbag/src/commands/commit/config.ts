@@ -3,12 +3,18 @@ import load from "@commitlint/load";
 import { RuleConfigSeverity, type UserConfig } from "@commitlint/types";
 import { useRoot } from "@/utils/common";
 import { useFs } from "@/utils/fs";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const commitlintConfigConventionalPath = require.resolve(
+  "@commitlint/config-conventional"
+);
+console.log({ commitlintConfigConventionalPath });
 export interface CommitConfig {
   lint: UserConfig;
 }
 export const CommitConfigDefault: CommitConfig = {
   lint: {
-    extends: ["@commitlint/config-conventional"],
+    extends: [commitlintConfigConventionalPath],
     rules: {
       "type-enum": () => {
         return [

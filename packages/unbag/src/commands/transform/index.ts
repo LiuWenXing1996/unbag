@@ -25,8 +25,16 @@ export interface TransformConfig {
   match: (params: {
     filePath: RelativePath;
     inputDir: AbsolutePath;
+    // TODO:这些 finalUserConfig 可不可以去掉？
     finalUserConfig: FinalUserConfig;
   }) => MaybePromise<boolean>;
+  actions: Record<
+    string,
+    (params: {
+      helper: TransformActionHelper;
+      finalUserConfig: FinalUserConfig;
+    }) => Promise<void>
+  >;
   action: (params: {
     helper: TransformActionHelper;
     finalUserConfig: FinalUserConfig;
@@ -79,6 +87,7 @@ export const TransformConfigDefault: TransformConfig = {
   ignores: {
     ".DS_Store": true,
   },
+  actions: {},
   action: async ({ finalUserConfig }) => {
     const message = useMessage({
       locale: finalUserConfig.locale,

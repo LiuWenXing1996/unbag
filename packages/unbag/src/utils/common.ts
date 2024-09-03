@@ -74,22 +74,6 @@ export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export const wrapperZodLazyResult = <T extends z.ZodType>(zodType: T) => {
   return zodType as z.ZodSchema<z.output<typeof zodType>>;
 };
-export const defineZodFunctionWithDefault = <
-  Args extends z.ZodTuple<any, any>,
-  Returns extends z.ZodTypeAny,
-  ArgsTsType = z.infer<Args>
->(
-  zodFunction: z.ZodFunction<Args, Returns>,
-  defaultValue?: (...arg0: ArgsTsType) => z.infer<Returns>
-) => {
-  if (defaultValue) {
-    // @ts-ignore
-    return zodFunction.default(() => {
-      return defaultValue;
-    });
-  }
-  return zodFunction;
-};
 export const useRoot = (params: { finalUserConfig: FinalUserConfig }) => {
   const { finalUserConfig } = params;
   const path = usePath();

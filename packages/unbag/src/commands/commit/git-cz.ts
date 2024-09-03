@@ -1,7 +1,6 @@
 import { type FinalUserConfig } from "@/utils/config";
 import { useGit } from "@/utils/git";
 import { useMessage } from "@/utils/message";
-import { getPrompter } from "./prompter";
 import { createRequire } from "node:module";
 import { usePath } from "@/utils/path";
 import { loadCommitLintConfig } from "./config";
@@ -34,6 +33,7 @@ export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
   console.log({ process });
   const lintConfig = await loadCommitLintConfig({ finalUserConfig });
   const prompter = (inquirerIns, commit) => {
+    console.log({inquirerIns})
     process(lintConfig.rules, lintConfig.prompt, inquirerIns).then(commit);
   };
   console.log({ lintConfig });
@@ -61,6 +61,7 @@ export const gitCz = async (params: { finalUserConfig: FinalUserConfig }) => {
       quiet: false,
     },
     function (error) {
+      console.log({error})
       if (error) {
         throw error;
       }
