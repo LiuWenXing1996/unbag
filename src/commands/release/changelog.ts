@@ -50,7 +50,10 @@ export const ReleaseChangelogConfigDefault: ReleaseChangelogConfig = {
       config,
     });
     const fs = useFs();
-    const content = await fs.readFile(changelogFileAbsolutePath, "utf-8");
+    const fileExist = await fs.pathExists(changelogFileAbsolutePath);
+    const content = fileExist
+      ? await fs.readFile(changelogFileAbsolutePath, "utf-8")
+      : "";
     return changelogContentParser(content);
   },
   fileWrite: async ({ config, changelogRes }) => {
@@ -85,16 +88,17 @@ export const changelogContentParser = (
   const result: ReleaseChangelogFileContent = {};
   const headerIndex = content.indexOf(ChangelogHeaderDividerTag);
   const footerIndex = content.indexOf(ChangelogFooterDividerTag);
-  // FIXME:这个地方的解析有问题，会出现‘ag!!!)’乱码
   if (headerIndex > -1) {
-    result.header = content.substring(0, ChangelogHeaderDividerTag.length);
+    result.header = content.substring(0, headerIndex);
   }
   result.body = content.substring(
-    headerIndex > -1 ? ChangelogHeaderDividerTag.length : 0,
+    headerIndex > -1 ? ChangelogHeaderDividerTag.length + headerIndex : 0,
     footerIndex > -1 ? footerIndex : undefined
   );
   if (footerIndex > -1) {
-    result.footer = content.substring(ChangelogFooterDividerTag.length);
+    result.footer = content.substring(
+      footerIndex + ChangelogHeaderDividerTag.length
+    );
   }
   return result;
 };
@@ -125,14 +129,17 @@ export const changelog = async ({ config }: { config: FinalUserConfig }) => {
   } = config;
 
   // TODO：此处需要过滤 scope
+  log.debug({ tagPrefix });
   const conventionalChangelogStream = conventionalChangelog({
     preset: resolvePresetPath(),
     tagPrefix,
   });
   const newChangeset = await streamToString(conventionalChangelogStream);
+
   const oldContent = await fileRead({
     config,
   });
+
   const newContent: ReleaseChangelogFileContent = {
     header,
     footer,

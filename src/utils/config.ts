@@ -4,7 +4,7 @@ import { useFs } from "./fs";
 import { AbsolutePath, usePath } from "../utils/path";
 import { bundleRequire } from "bundle-require";
 import { ReleaseConfig, releaseDefaultConfig } from "../commands/release";
-import { arraify, filterNullable, isObject, Locale, safeObj } from "./common";
+import { arraify, filterNullable, isObject, Locale } from "./common";
 import { useMessage } from "./message";
 import { DeepPartial } from "./types";
 import { LogConfig, LogConfigDefault } from "./log";
@@ -18,6 +18,7 @@ export type UserConfig = {
   configFileResolvedPath?: string;
   tempDir: string;
   log: LogConfig;
+  catch: (error: any) => void;
   transform: TransformConfig;
   parallel: ParallelConfig;
   release: ReleaseConfig;
@@ -37,6 +38,8 @@ export const useDefaultConfig = () => {
     parallel: ParallelDefaultConfig,
     release: releaseDefaultConfig,
     commit: CommitConfigDefault,
+    // TODO:实现顶层 catch
+    catch: () => {},
   };
   return defaultConfig;
 };

@@ -9,6 +9,7 @@ import { useFs } from "@/utils/fs";
 import { useLog } from "@/utils/log";
 import { Bumper } from "conventional-recommended-bump";
 import { resolvePresetPath } from "./utils";
+import { unSafeFunctionWrapper } from "@/utils/common";
 export interface VersionFileFileContent {
   version: string;
 }
@@ -130,6 +131,11 @@ export const genVersionByCommits = async (params: {
     prefix: tagPrefix,
   });
   let commits = await getCommits(bumper);
+  log.debug({
+    commits,
+    scope,
+    tagPrefix,
+  });
   if (scope) {
     commits = commits.filter((e) => e.scope === scope);
   }
@@ -168,6 +174,7 @@ export const genVersionByCommits = async (params: {
     }
   }
   if (!isReleaseType(releaseType)) {
+    log.error(message.releaseBumpCommitsGenUnValidReleaseType());
     throw new Error(message.releaseBumpCommitsGenUnValidReleaseType());
   }
   log.info(
@@ -177,6 +184,7 @@ export const genVersionByCommits = async (params: {
   );
   const version = semver.inc(oldVersion, releaseType, releasePreTag);
   if (!version) {
+    log.error(message.releaseBumpGenUnValidVersion());
     throw new Error(message.releaseBumpGenUnValidVersion());
   }
   return {
@@ -207,11 +215,15 @@ export const genVersion = async ({
       bump: { versionFileRead, releaseAs, releaseType, releasePreTag },
     },
   } = config;
-  const versionFileContent = await versionFileRead({
+  // TODO:...
+  const versionFileContent = await unSafeFunctionWrapper(versionFileRead)({
     config,
   });
   if (!versionFileContent) {
     throw new Error(message.releaseBumpNotFoundVersionFile());
+  }
+  if (!versionFileContent.version) {
+    throw new Error(message.release.bump.unValidOldVersion());
   }
   const oldVersion = versionFileContent.version;
   log.info(
@@ -265,18 +277,28 @@ export const bump = async ({
 }: {
   config: FinalUserConfig;
 }): Promise<BumpResult> => {
+  const log = useLog({ finalUserConfig: config });
+  const message = useMessage({
+    locale: config.locale,
+  });
   const versionResult = await genVersion({
     config,
   });
+  log.info(
+    message.release.bump.end({
+      version: versionResult.version,
+      oldVersion: versionResult.oldVersion,
+    })
+  );
+  if (semver.compare(versionResult.oldVersion, versionResult.version) >= 0) {
+    throw new Error(message.release.bump.unValidVersionResult());
+  }
   const {
     release: {
       bump: { versionFileWriteDisable, versionFileWrite },
     },
   } = config;
-  const log = useLog({ finalUserConfig: config });
-  const message = useMessage({
-    locale: config.locale,
-  });
+
   if (!versionFileWriteDisable) {
     await versionFileWrite({
       config,

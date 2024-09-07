@@ -1,10 +1,15 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "node16",
-    "moduleResolution": "node16",
-    "allowJs": true,
-    "noEmit": true
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+    }
   },
   "exclude": [
     "node_modules"

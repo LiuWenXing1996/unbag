@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "test sh"
-message="feat: test feat"
-echo $message
-pnpm unbag commitlint --message "$message"
+# echo $1
+# message=$(cat $1)
+# echo $message
+pnpm commit lint --message "feat(sss): fhsdfdsghj"
